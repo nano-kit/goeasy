@@ -9,6 +9,7 @@ import (
 
 	log "github.com/micro/go-micro/v2/logger"
 	signalutil "github.com/micro/go-micro/v2/util/signal"
+	"github.com/nano-kit/goeasy/comet"
 	"github.com/nano-kit/goeasy/gate"
 	"github.com/nano-kit/goeasy/internal/reexec"
 	"github.com/nano-kit/goeasy/servers/imchat"
@@ -25,6 +26,7 @@ const namespace = "io.goeasy"
 const (
 	stSupervisor serverType = iota
 	stGate
+	stComet
 	stIMChat
 )
 
@@ -38,6 +40,12 @@ var (
 				Namespace: namespace,
 			},
 			serverType: stGate,
+		},
+		{
+			server: &comet.Server{
+				Namespace: namespace,
+			},
+			serverType: stComet,
 		},
 		{
 			server: &imchat.Server{

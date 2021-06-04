@@ -1,14 +1,12 @@
-package imchat
+package comet
 
 import (
-	context "context"
-
 	"github.com/micro/go-micro/v2"
 	log "github.com/micro/go-micro/v2/logger"
 )
 
 const (
-	ServiceName = "imchat"
+	ServiceName = "comet"
 )
 
 type Server struct {
@@ -27,18 +25,10 @@ func (s *Server) Run() {
 	srvOpts = append(srvOpts, micro.Name(s.Name()))
 	service := micro.NewService(srvOpts...)
 
-	RegisterDemoHandler(service.Server(), new(Demo))
+	RegisterCometHandler(service.Server(), New())
 
 	// Run micro server
 	if err := service.Run(); err != nil {
 		log.Fatal(err)
 	}
-}
-
-type Demo struct{}
-
-func (d *Demo) Hello(ctx context.Context, req *HelloReq, res *HelloRes) error {
-	log.Infof("Entering Demo.Hello with req=%v", req)
-	res.Ack = "<ack> " + req.Say
-	return nil
 }

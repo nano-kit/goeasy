@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+package comet;
+
+service Comet {
+    rpc Publish(PublishReq) returns (PublishRes);
+	rpc Subscribe(stream Heartbeat) returns (stream ServerPush);
+}
+
+message Heartbeat {
+	string token = 1;
+}
+
+message ServerPush {
+	enum Type {
+		HEARTBEAT = 0;
+		PUBLISH_NOTE = 1;
+	}
+	Type t = 1;
+	PublishNote publish_note = 2;
+}
+
+message PublishNote {
+	string topic = 1;
+	string text = 2;
+}
+
+message PublishReq {
+	PublishNote publish_note = 1;
+}
+
+message PublishRes {
+}
