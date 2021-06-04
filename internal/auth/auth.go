@@ -19,6 +19,7 @@ type authClaims struct {
 	jwt.StandardClaims
 }
 
+// AccountToToken converts account to JWT token
 func AccountToToken(acc *microauth.Account) string {
 	claims := authClaims{
 		Type:     acc.Type,

@@ -23,6 +23,7 @@ var (
 	jsonUnmarshaler = jsonpb.Unmarshaler{}
 )
 
+//lint:ignore U1000 may be used in the future
 func jsonMarshal(m proto.Message) ([]byte, error) {
 	b := new(bytes.Buffer)
 	err := jsonMarshaler.Marshal(b, m)

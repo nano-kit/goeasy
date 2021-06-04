@@ -6,7 +6,7 @@ import (
 	"github.com/micro/go-micro/v2/api/resolver"
 )
 
-// default resolver for legacy purposes
+// Resolver is the default resolver for legacy purposes
 // it uses proxy routing to resolve names
 // /foo becomes namespace.foo
 // /v1/foo becomes namespace.v1.foo
