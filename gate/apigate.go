@@ -28,12 +28,16 @@ type Server struct {
 	Namespace string
 }
 
+func (s *Server) Name() string {
+	return s.Namespace + "." + ServiceName
+}
+
 func (s *Server) Run() {
 	log.Init(log.WithFields(map[string]interface{}{"service": ServiceName}))
 
 	// initialize the micro service
 	var srvOpts []micro.Option
-	srvOpts = append(srvOpts, micro.Name(s.Namespace+"."+ServiceName))
+	srvOpts = append(srvOpts, micro.Name(s.Name()))
 	service := micro.NewService(srvOpts...)
 
 	// initialize the API gate server
