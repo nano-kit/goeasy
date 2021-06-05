@@ -69,7 +69,7 @@ func (c *cometService) Publish(ctx context.Context, in *PublishReq, opts ...clie
 }
 
 func (c *cometService) Subscribe(ctx context.Context, opts ...client.CallOption) (Comet_SubscribeService, error) {
-	req := c.c.NewRequest(c.name, "Comet.Subscribe", &Heartbeat{})
+	req := c.c.NewRequest(c.name, "Comet.Subscribe", &Uplink{})
 	stream, err := c.c.Stream(ctx, req, opts...)
 	if err != nil {
 		return nil, err
@@ -82,8 +82,8 @@ type Comet_SubscribeService interface {
 	SendMsg(interface{}) error
 	RecvMsg(interface{}) error
 	Close() error
-	Send(*Heartbeat) error
-	Recv() (*ServerPush, error)
+	Send(*Uplink) error
+	Recv() (*Downlink, error)
 }
 
 type cometServiceSubscribe struct {
@@ -106,12 +106,12 @@ func (x *cometServiceSubscribe) RecvMsg(m interface{}) error {
 	return x.stream.Recv(m)
 }
 
-func (x *cometServiceSubscribe) Send(m *Heartbeat) error {
+func (x *cometServiceSubscribe) Send(m *Uplink) error {
 	return x.stream.Send(m)
 }
 
-func (x *cometServiceSubscribe) Recv() (*ServerPush, error) {
-	m := new(ServerPush)
+func (x *cometServiceSubscribe) Recv() (*Downlink, error) {
+	m := new(Downlink)
 	err := x.stream.Recv(m)
 	if err != nil {
 		return nil, err
@@ -155,8 +155,8 @@ type Comet_SubscribeStream interface {
 	SendMsg(interface{}) error
 	RecvMsg(interface{}) error
 	Close() error
-	Send(*ServerPush) error
-	Recv() (*Heartbeat, error)
+	Send(*Downlink) error
+	Recv() (*Uplink, error)
 }
 
 type cometSubscribeStream struct {
@@ -179,12 +179,12 @@ func (x *cometSubscribeStream) RecvMsg(m interface{}) error {
 	return x.stream.Recv(m)
 }
 
-func (x *cometSubscribeStream) Send(m *ServerPush) error {
+func (x *cometSubscribeStream) Send(m *Downlink) error {
 	return x.stream.Send(m)
 }
 
-func (x *cometSubscribeStream) Recv() (*Heartbeat, error) {
-	m := new(Heartbeat)
+func (x *cometSubscribeStream) Recv() (*Uplink, error) {
+	m := new(Uplink)
 	if err := x.stream.Recv(m); err != nil {
 		return nil, err
 	}

@@ -20,176 +20,54 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.ProtoPackageIsVersion3 // please upgrade the proto package
 
-type ServerPush_Type int32
+type MsgType int32
 
 const (
-	ServerPush_HEARTBEAT    ServerPush_Type = 0
-	ServerPush_PUBLISH_NOTE ServerPush_Type = 1
+	// Heartbeat is sent on downlink and uplink, to keep the persistent connection alive
+	MsgType_HB MsgType = 0
+	// Auth is sent on uplink as the first message for Comet.Subscribe
+	MsgType_AUTH MsgType = 1
+	// JoinRoom is sent on uplink to join the specified room
+	MsgType_JOIN MsgType = 2
+	// ServerPush is sent on downlink to push event to client
+	MsgType_PUSH MsgType = 3
 )
 
-var ServerPush_Type_name = map[int32]string{
-	0: "HEARTBEAT",
-	1: "PUBLISH_NOTE",
+var MsgType_name = map[int32]string{
+	0: "HB",
+	1: "AUTH",
+	2: "JOIN",
+	3: "PUSH",
 }
 
-var ServerPush_Type_value = map[string]int32{
-	"HEARTBEAT":    0,
-	"PUBLISH_NOTE": 1,
+var MsgType_value = map[string]int32{
+	"HB":   0,
+	"AUTH": 1,
+	"JOIN": 2,
+	"PUSH": 3,
 }
 
-func (x ServerPush_Type) String() string {
-	return proto.EnumName(ServerPush_Type_name, int32(x))
+func (x MsgType) String() string {
+	return proto.EnumName(MsgType_name, int32(x))
 }
 
-func (ServerPush_Type) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_ac08d4044ac8a660, []int{1, 0}
-}
-
-type Heartbeat struct {
-	Token                string   `protobuf:"bytes,1,opt,name=token,proto3" json:"token,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
-}
-
-func (m *Heartbeat) Reset()         { *m = Heartbeat{} }
-func (m *Heartbeat) String() string { return proto.CompactTextString(m) }
-func (*Heartbeat) ProtoMessage()    {}
-func (*Heartbeat) Descriptor() ([]byte, []int) {
+func (MsgType) EnumDescriptor() ([]byte, []int) {
 	return fileDescriptor_ac08d4044ac8a660, []int{0}
 }
 
-func (m *Heartbeat) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_Heartbeat.Unmarshal(m, b)
-}
-func (m *Heartbeat) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_Heartbeat.Marshal(b, m, deterministic)
-}
-func (m *Heartbeat) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_Heartbeat.Merge(m, src)
-}
-func (m *Heartbeat) XXX_Size() int {
-	return xxx_messageInfo_Heartbeat.Size(m)
-}
-func (m *Heartbeat) XXX_DiscardUnknown() {
-	xxx_messageInfo_Heartbeat.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_Heartbeat proto.InternalMessageInfo
-
-func (m *Heartbeat) GetToken() string {
-	if m != nil {
-		return m.Token
-	}
-	return ""
-}
-
-type ServerPush struct {
-	T                    ServerPush_Type `protobuf:"varint,1,opt,name=t,proto3,enum=comet.ServerPush_Type" json:"t,omitempty"`
-	PublishNote          *PublishNote    `protobuf:"bytes,2,opt,name=publish_note,json=publishNote,proto3" json:"publish_note,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}        `json:"-"`
-	XXX_unrecognized     []byte          `json:"-"`
-	XXX_sizecache        int32           `json:"-"`
-}
-
-func (m *ServerPush) Reset()         { *m = ServerPush{} }
-func (m *ServerPush) String() string { return proto.CompactTextString(m) }
-func (*ServerPush) ProtoMessage()    {}
-func (*ServerPush) Descriptor() ([]byte, []int) {
-	return fileDescriptor_ac08d4044ac8a660, []int{1}
-}
-
-func (m *ServerPush) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_ServerPush.Unmarshal(m, b)
-}
-func (m *ServerPush) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_ServerPush.Marshal(b, m, deterministic)
-}
-func (m *ServerPush) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_ServerPush.Merge(m, src)
-}
-func (m *ServerPush) XXX_Size() int {
-	return xxx_messageInfo_ServerPush.Size(m)
-}
-func (m *ServerPush) XXX_DiscardUnknown() {
-	xxx_messageInfo_ServerPush.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_ServerPush proto.InternalMessageInfo
-
-func (m *ServerPush) GetT() ServerPush_Type {
-	if m != nil {
-		return m.T
-	}
-	return ServerPush_HEARTBEAT
-}
-
-func (m *ServerPush) GetPublishNote() *PublishNote {
-	if m != nil {
-		return m.PublishNote
-	}
-	return nil
-}
-
-type PublishNote struct {
-	Topic                string   `protobuf:"bytes,1,opt,name=topic,proto3" json:"topic,omitempty"`
-	Text                 string   `protobuf:"bytes,2,opt,name=text,proto3" json:"text,omitempty"`
+type PublishReq struct {
+	Uid                  string   `protobuf:"bytes,1,opt,name=uid,proto3" json:"uid,omitempty"`
+	Evt                  string   `protobuf:"bytes,2,opt,name=evt,proto3" json:"evt,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
-}
-
-func (m *PublishNote) Reset()         { *m = PublishNote{} }
-func (m *PublishNote) String() string { return proto.CompactTextString(m) }
-func (*PublishNote) ProtoMessage()    {}
-func (*PublishNote) Descriptor() ([]byte, []int) {
-	return fileDescriptor_ac08d4044ac8a660, []int{2}
-}
-
-func (m *PublishNote) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_PublishNote.Unmarshal(m, b)
-}
-func (m *PublishNote) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_PublishNote.Marshal(b, m, deterministic)
-}
-func (m *PublishNote) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_PublishNote.Merge(m, src)
-}
-func (m *PublishNote) XXX_Size() int {
-	return xxx_messageInfo_PublishNote.Size(m)
-}
-func (m *PublishNote) XXX_DiscardUnknown() {
-	xxx_messageInfo_PublishNote.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_PublishNote proto.InternalMessageInfo
-
-func (m *PublishNote) GetTopic() string {
-	if m != nil {
-		return m.Topic
-	}
-	return ""
-}
-
-func (m *PublishNote) GetText() string {
-	if m != nil {
-		return m.Text
-	}
-	return ""
-}
-
-type PublishReq struct {
-	PublishNote          *PublishNote `protobuf:"bytes,1,opt,name=publish_note,json=publishNote,proto3" json:"publish_note,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}     `json:"-"`
-	XXX_unrecognized     []byte       `json:"-"`
-	XXX_sizecache        int32        `json:"-"`
 }
 
 func (m *PublishReq) Reset()         { *m = PublishReq{} }
 func (m *PublishReq) String() string { return proto.CompactTextString(m) }
 func (*PublishReq) ProtoMessage()    {}
 func (*PublishReq) Descriptor() ([]byte, []int) {
-	return fileDescriptor_ac08d4044ac8a660, []int{3}
+	return fileDescriptor_ac08d4044ac8a660, []int{0}
 }
 
 func (m *PublishReq) XXX_Unmarshal(b []byte) error {
@@ -210,11 +88,18 @@ func (m *PublishReq) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_PublishReq proto.InternalMessageInfo
 
-func (m *PublishReq) GetPublishNote() *PublishNote {
+func (m *PublishReq) GetUid() string {
 	if m != nil {
-		return m.PublishNote
+		return m.Uid
 	}
-	return nil
+	return ""
+}
+
+func (m *PublishReq) GetEvt() string {
+	if m != nil {
+		return m.Evt
+	}
+	return ""
 }
 
 type PublishRes struct {
@@ -227,7 +112,7 @@ func (m *PublishRes) Reset()         { *m = PublishRes{} }
 func (m *PublishRes) String() string { return proto.CompactTextString(m) }
 func (*PublishRes) ProtoMessage()    {}
 func (*PublishRes) Descriptor() ([]byte, []int) {
-	return fileDescriptor_ac08d4044ac8a660, []int{4}
+	return fileDescriptor_ac08d4044ac8a660, []int{1}
 }
 
 func (m *PublishRes) XXX_Unmarshal(b []byte) error {
@@ -248,13 +133,282 @@ func (m *PublishRes) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_PublishRes proto.InternalMessageInfo
 
+type Uplink struct {
+	T                    MsgType    `protobuf:"varint,1,opt,name=t,proto3,enum=comet.MsgType" json:"t,omitempty"`
+	Hb                   *Heartbeat `protobuf:"bytes,2,opt,name=hb,proto3" json:"hb,omitempty"`
+	Auth                 *Auth      `protobuf:"bytes,3,opt,name=auth,proto3" json:"auth,omitempty"`
+	Join                 *JoinRoom  `protobuf:"bytes,4,opt,name=join,proto3" json:"join,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}   `json:"-"`
+	XXX_unrecognized     []byte     `json:"-"`
+	XXX_sizecache        int32      `json:"-"`
+}
+
+func (m *Uplink) Reset()         { *m = Uplink{} }
+func (m *Uplink) String() string { return proto.CompactTextString(m) }
+func (*Uplink) ProtoMessage()    {}
+func (*Uplink) Descriptor() ([]byte, []int) {
+	return fileDescriptor_ac08d4044ac8a660, []int{2}
+}
+
+func (m *Uplink) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_Uplink.Unmarshal(m, b)
+}
+func (m *Uplink) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_Uplink.Marshal(b, m, deterministic)
+}
+func (m *Uplink) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Uplink.Merge(m, src)
+}
+func (m *Uplink) XXX_Size() int {
+	return xxx_messageInfo_Uplink.Size(m)
+}
+func (m *Uplink) XXX_DiscardUnknown() {
+	xxx_messageInfo_Uplink.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_Uplink proto.InternalMessageInfo
+
+func (m *Uplink) GetT() MsgType {
+	if m != nil {
+		return m.T
+	}
+	return MsgType_HB
+}
+
+func (m *Uplink) GetHb() *Heartbeat {
+	if m != nil {
+		return m.Hb
+	}
+	return nil
+}
+
+func (m *Uplink) GetAuth() *Auth {
+	if m != nil {
+		return m.Auth
+	}
+	return nil
+}
+
+func (m *Uplink) GetJoin() *JoinRoom {
+	if m != nil {
+		return m.Join
+	}
+	return nil
+}
+
+type Downlink struct {
+	T                    MsgType     `protobuf:"varint,1,opt,name=t,proto3,enum=comet.MsgType" json:"t,omitempty"`
+	Hb                   *Heartbeat  `protobuf:"bytes,2,opt,name=hb,proto3" json:"hb,omitempty"`
+	Push                 *ServerPush `protobuf:"bytes,3,opt,name=push,proto3" json:"push,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}    `json:"-"`
+	XXX_unrecognized     []byte      `json:"-"`
+	XXX_sizecache        int32       `json:"-"`
+}
+
+func (m *Downlink) Reset()         { *m = Downlink{} }
+func (m *Downlink) String() string { return proto.CompactTextString(m) }
+func (*Downlink) ProtoMessage()    {}
+func (*Downlink) Descriptor() ([]byte, []int) {
+	return fileDescriptor_ac08d4044ac8a660, []int{3}
+}
+
+func (m *Downlink) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_Downlink.Unmarshal(m, b)
+}
+func (m *Downlink) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_Downlink.Marshal(b, m, deterministic)
+}
+func (m *Downlink) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Downlink.Merge(m, src)
+}
+func (m *Downlink) XXX_Size() int {
+	return xxx_messageInfo_Downlink.Size(m)
+}
+func (m *Downlink) XXX_DiscardUnknown() {
+	xxx_messageInfo_Downlink.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_Downlink proto.InternalMessageInfo
+
+func (m *Downlink) GetT() MsgType {
+	if m != nil {
+		return m.T
+	}
+	return MsgType_HB
+}
+
+func (m *Downlink) GetHb() *Heartbeat {
+	if m != nil {
+		return m.Hb
+	}
+	return nil
+}
+
+func (m *Downlink) GetPush() *ServerPush {
+	if m != nil {
+		return m.Push
+	}
+	return nil
+}
+
+type Heartbeat struct {
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *Heartbeat) Reset()         { *m = Heartbeat{} }
+func (m *Heartbeat) String() string { return proto.CompactTextString(m) }
+func (*Heartbeat) ProtoMessage()    {}
+func (*Heartbeat) Descriptor() ([]byte, []int) {
+	return fileDescriptor_ac08d4044ac8a660, []int{4}
+}
+
+func (m *Heartbeat) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_Heartbeat.Unmarshal(m, b)
+}
+func (m *Heartbeat) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_Heartbeat.Marshal(b, m, deterministic)
+}
+func (m *Heartbeat) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Heartbeat.Merge(m, src)
+}
+func (m *Heartbeat) XXX_Size() int {
+	return xxx_messageInfo_Heartbeat.Size(m)
+}
+func (m *Heartbeat) XXX_DiscardUnknown() {
+	xxx_messageInfo_Heartbeat.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_Heartbeat proto.InternalMessageInfo
+
+type Auth struct {
+	Token                string   `protobuf:"bytes,1,opt,name=token,proto3" json:"token,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *Auth) Reset()         { *m = Auth{} }
+func (m *Auth) String() string { return proto.CompactTextString(m) }
+func (*Auth) ProtoMessage()    {}
+func (*Auth) Descriptor() ([]byte, []int) {
+	return fileDescriptor_ac08d4044ac8a660, []int{5}
+}
+
+func (m *Auth) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_Auth.Unmarshal(m, b)
+}
+func (m *Auth) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_Auth.Marshal(b, m, deterministic)
+}
+func (m *Auth) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Auth.Merge(m, src)
+}
+func (m *Auth) XXX_Size() int {
+	return xxx_messageInfo_Auth.Size(m)
+}
+func (m *Auth) XXX_DiscardUnknown() {
+	xxx_messageInfo_Auth.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_Auth proto.InternalMessageInfo
+
+func (m *Auth) GetToken() string {
+	if m != nil {
+		return m.Token
+	}
+	return ""
+}
+
+type JoinRoom struct {
+	Rid                  string   `protobuf:"bytes,1,opt,name=rid,proto3" json:"rid,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *JoinRoom) Reset()         { *m = JoinRoom{} }
+func (m *JoinRoom) String() string { return proto.CompactTextString(m) }
+func (*JoinRoom) ProtoMessage()    {}
+func (*JoinRoom) Descriptor() ([]byte, []int) {
+	return fileDescriptor_ac08d4044ac8a660, []int{6}
+}
+
+func (m *JoinRoom) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_JoinRoom.Unmarshal(m, b)
+}
+func (m *JoinRoom) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_JoinRoom.Marshal(b, m, deterministic)
+}
+func (m *JoinRoom) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_JoinRoom.Merge(m, src)
+}
+func (m *JoinRoom) XXX_Size() int {
+	return xxx_messageInfo_JoinRoom.Size(m)
+}
+func (m *JoinRoom) XXX_DiscardUnknown() {
+	xxx_messageInfo_JoinRoom.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_JoinRoom proto.InternalMessageInfo
+
+func (m *JoinRoom) GetRid() string {
+	if m != nil {
+		return m.Rid
+	}
+	return ""
+}
+
+type ServerPush struct {
+	Evt                  string   `protobuf:"bytes,1,opt,name=evt,proto3" json:"evt,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *ServerPush) Reset()         { *m = ServerPush{} }
+func (m *ServerPush) String() string { return proto.CompactTextString(m) }
+func (*ServerPush) ProtoMessage()    {}
+func (*ServerPush) Descriptor() ([]byte, []int) {
+	return fileDescriptor_ac08d4044ac8a660, []int{7}
+}
+
+func (m *ServerPush) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_ServerPush.Unmarshal(m, b)
+}
+func (m *ServerPush) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_ServerPush.Marshal(b, m, deterministic)
+}
+func (m *ServerPush) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ServerPush.Merge(m, src)
+}
+func (m *ServerPush) XXX_Size() int {
+	return xxx_messageInfo_ServerPush.Size(m)
+}
+func (m *ServerPush) XXX_DiscardUnknown() {
+	xxx_messageInfo_ServerPush.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_ServerPush proto.InternalMessageInfo
+
+func (m *ServerPush) GetEvt() string {
+	if m != nil {
+		return m.Evt
+	}
+	return ""
+}
+
 func init() {
-	proto.RegisterEnum("comet.ServerPush_Type", ServerPush_Type_name, ServerPush_Type_value)
-	proto.RegisterType((*Heartbeat)(nil), "comet.Heartbeat")
-	proto.RegisterType((*ServerPush)(nil), "comet.ServerPush")
-	proto.RegisterType((*PublishNote)(nil), "comet.PublishNote")
+	proto.RegisterEnum("comet.MsgType", MsgType_name, MsgType_value)
 	proto.RegisterType((*PublishReq)(nil), "comet.PublishReq")
 	proto.RegisterType((*PublishRes)(nil), "comet.PublishRes")
+	proto.RegisterType((*Uplink)(nil), "comet.Uplink")
+	proto.RegisterType((*Downlink)(nil), "comet.Downlink")
+	proto.RegisterType((*Heartbeat)(nil), "comet.Heartbeat")
+	proto.RegisterType((*Auth)(nil), "comet.Auth")
+	proto.RegisterType((*JoinRoom)(nil), "comet.JoinRoom")
+	proto.RegisterType((*ServerPush)(nil), "comet.ServerPush")
 }
 
 func init() {
@@ -262,23 +416,28 @@ func init() {
 }
 
 var fileDescriptor_ac08d4044ac8a660 = []byte{
-	// 285 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x8c, 0x91, 0x41, 0x4b, 0xfb, 0x40,
-	0x10, 0xc5, 0xff, 0xfb, 0xa7, 0x55, 0x32, 0x89, 0x12, 0x07, 0x91, 0xe2, 0xa9, 0x06, 0xc1, 0x9c,
-	0xa2, 0x44, 0xc5, 0x73, 0x5b, 0x02, 0x11, 0xa4, 0x86, 0x4d, 0x3c, 0x97, 0x26, 0x0c, 0x34, 0xa8,
-	0xd9, 0x6d, 0x32, 0x11, 0xfd, 0x1a, 0x7e, 0x62, 0x69, 0x12, 0x9a, 0x4a, 0x2f, 0xde, 0xf2, 0xe6,
-	0xcd, 0xfb, 0xe5, 0xb1, 0x03, 0x66, 0xa6, 0xde, 0x89, 0x3d, 0x5d, 0x2a, 0x56, 0x38, 0x6c, 0x84,
-	0x73, 0x01, 0x46, 0x48, 0xcb, 0x92, 0x53, 0x5a, 0x32, 0x9e, 0xc2, 0x90, 0xd5, 0x2b, 0x15, 0x23,
-	0x31, 0x16, 0xae, 0x21, 0x5b, 0xe1, 0x7c, 0x0b, 0x80, 0x98, 0xca, 0x0f, 0x2a, 0xa3, 0xba, 0x5a,
-	0xe1, 0x25, 0x08, 0x6e, 0x16, 0x8e, 0xfd, 0x33, 0xaf, 0x25, 0xf6, 0xae, 0x97, 0x7c, 0x69, 0x92,
-	0x82, 0xf1, 0x1e, 0x2c, 0x5d, 0xa7, 0x6f, 0x79, 0xb5, 0x5a, 0x14, 0x8a, 0x69, 0xf4, 0x7f, 0x2c,
-	0x5c, 0xd3, 0xc7, 0x2e, 0x10, 0xb5, 0xd6, 0x5c, 0x31, 0x49, 0x53, 0xf7, 0xc2, 0xb9, 0x82, 0xc1,
-	0x86, 0x80, 0x47, 0x60, 0x84, 0xc1, 0x44, 0x26, 0xd3, 0x60, 0x92, 0xd8, 0xff, 0xd0, 0x06, 0x2b,
-	0x7a, 0x99, 0x3e, 0x3d, 0xc6, 0xe1, 0x62, 0xfe, 0x9c, 0x04, 0xb6, 0x70, 0x1e, 0xc0, 0xdc, 0x81,
-	0xb4, 0xcd, 0x75, 0x9e, 0xf5, 0xcd, 0x75, 0x9e, 0x21, 0xc2, 0x80, 0xe9, 0x93, 0x9b, 0x9f, 0x1b,
-	0xb2, 0xf9, 0x76, 0x66, 0x00, 0x5d, 0x50, 0xd2, 0x7a, 0xaf, 0xa6, 0xf8, 0x5b, 0x4d, 0x6b, 0x07,
-	0x52, 0xf9, 0x05, 0x0c, 0x67, 0x9b, 0x7d, 0xbc, 0x86, 0xc3, 0x6e, 0x8c, 0x27, 0xbf, 0x11, 0x92,
-	0xd6, 0xe7, 0x7b, 0xa3, 0x0a, 0xef, 0xc0, 0x88, 0xeb, 0xb4, 0xca, 0xca, 0x3c, 0x25, 0xb4, 0x3b,
-	0x7f, 0x7b, 0x8f, 0x6d, 0xa2, 0x7f, 0x5f, 0x57, 0xdc, 0x88, 0xf4, 0xa0, 0xb9, 0xe0, 0xed, 0x4f,
-	0x00, 0x00, 0x00, 0xff, 0xff, 0x9f, 0xf4, 0x8b, 0xc0, 0xd0, 0x01, 0x00, 0x00,
+	// 358 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xac, 0x92, 0x5f, 0x4f, 0xf2, 0x30,
+	0x14, 0xc6, 0xdf, 0x8e, 0xf1, 0xef, 0xec, 0x7d, 0x79, 0x67, 0xe3, 0xc5, 0x42, 0x88, 0x92, 0x1a,
+	0x13, 0xe2, 0x05, 0x10, 0xfc, 0x04, 0xa8, 0x17, 0x93, 0x44, 0x25, 0x05, 0x3e, 0x00, 0x83, 0xc6,
+	0x55, 0x60, 0x1d, 0x5b, 0x8b, 0xf1, 0x4b, 0xf8, 0x99, 0x4d, 0xbb, 0x0e, 0x4c, 0xbc, 0xf5, 0xee,
+	0xf4, 0x3c, 0xcf, 0xe9, 0x9e, 0xfd, 0x4e, 0xc1, 0x5b, 0x89, 0x1d, 0x93, 0xfd, 0x34, 0x13, 0x52,
+	0xe0, 0xaa, 0x39, 0x90, 0x21, 0xc0, 0x54, 0x45, 0x5b, 0x9e, 0xc7, 0x94, 0xed, 0xb1, 0x0f, 0x15,
+	0xc5, 0xd7, 0x01, 0xea, 0xa2, 0x5e, 0x93, 0xea, 0x52, 0x77, 0xd8, 0x41, 0x06, 0x4e, 0xd1, 0x61,
+	0x07, 0x49, 0xfe, 0x7e, 0x9b, 0xc8, 0xc9, 0x27, 0x82, 0xda, 0x22, 0xdd, 0xf2, 0x64, 0x83, 0x3b,
+	0x80, 0xa4, 0x19, 0x6d, 0x8d, 0x5a, 0xfd, 0xe2, 0x53, 0x4f, 0xf9, 0xeb, 0xfc, 0x23, 0x65, 0x14,
+	0x49, 0xdc, 0x05, 0x27, 0x8e, 0xcc, 0x3d, 0xde, 0xc8, 0xb7, 0x72, 0xc8, 0x96, 0x99, 0x8c, 0xd8,
+	0x52, 0x52, 0x27, 0x8e, 0xf0, 0x25, 0xb8, 0x4b, 0x25, 0xe3, 0xa0, 0x62, 0x3c, 0x9e, 0xf5, 0x8c,
+	0x95, 0x8c, 0xa9, 0x11, 0xf0, 0x15, 0xb8, 0x6f, 0x82, 0x27, 0x81, 0x6b, 0x0c, 0xff, 0xad, 0x61,
+	0x22, 0x78, 0x42, 0x85, 0xd8, 0x51, 0x23, 0x92, 0x3d, 0x34, 0x1e, 0xc4, 0x7b, 0xf2, 0x2b, 0x89,
+	0xae, 0xc1, 0x4d, 0x55, 0x5e, 0x26, 0x3a, 0xb3, 0x9e, 0x19, 0xcb, 0x0e, 0x2c, 0x9b, 0xaa, 0x3c,
+	0xa6, 0x46, 0x26, 0x1e, 0x34, 0x8f, 0x73, 0xa4, 0x03, 0xae, 0x8e, 0x8c, 0xcf, 0xa1, 0x2a, 0xc5,
+	0x86, 0x25, 0x16, 0x66, 0x71, 0x20, 0x1d, 0x68, 0x94, 0x79, 0x35, 0xda, 0xec, 0x04, 0x3b, 0xe3,
+	0x6b, 0x72, 0x01, 0x70, 0xba, 0xbc, 0x44, 0x8f, 0x8e, 0xe8, 0x6f, 0x06, 0x50, 0xb7, 0xf9, 0x71,
+	0x0d, 0x9c, 0xf0, 0xce, 0xff, 0x83, 0x1b, 0xe0, 0x8e, 0x17, 0xf3, 0xd0, 0x47, 0xba, 0x9a, 0xbc,
+	0x3c, 0x3e, 0xfb, 0x8e, 0xae, 0xa6, 0x8b, 0x59, 0xe8, 0x57, 0x46, 0x1c, 0xaa, 0xf7, 0x3a, 0x33,
+	0x1e, 0x40, 0xdd, 0x2e, 0x0d, 0x97, 0xbf, 0x71, 0x5a, 0x7b, 0xfb, 0x47, 0x2b, 0xc7, 0x03, 0x68,
+	0xce, 0x54, 0x94, 0xaf, 0x32, 0x1e, 0x31, 0xfc, 0xcf, 0xea, 0xc5, 0xa2, 0xdb, 0x25, 0xf9, 0x92,
+	0x73, 0x0f, 0x0d, 0x51, 0x54, 0x33, 0xcf, 0xea, 0xf6, 0x2b, 0x00, 0x00, 0xff, 0xff, 0x94, 0xe6,
+	0x1d, 0xe5, 0x65, 0x02, 0x00, 0x00,
 }

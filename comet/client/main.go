@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"context"
-	"fmt"
 	"log"
 
 	"github.com/gobwas/ws"
@@ -13,17 +12,17 @@ import (
 	"github.com/micro/go-micro/v2/auth"
 	"github.com/nano-kit/goeasy/comet"
 	iauth "github.com/nano-kit/goeasy/internal/auth"
-	"github.com/nano-kit/goeasy/internal/json"
 )
 
 var (
 	jsonMarshaler = jsonpb.Marshaler{
-		OrigName: true,
+		OrigName:     true,
+		EnumsAsInts:  false,
+		EmitDefaults: false,
 	}
 	jsonUnmarshaler = jsonpb.Unmarshaler{}
 )
 
-//lint:ignore U1000 may be used in the future
 func jsonMarshal(m proto.Message) ([]byte, error) {
 	b := new(bytes.Buffer)
 	err := jsonMarshaler.Marshal(b, m)
@@ -35,38 +34,50 @@ func jsonUnmarshal(data []byte, m proto.Message) error {
 }
 
 func main() {
+	// connect to the websocket host
 	url := "ws://127.0.0.1:8080/comet/subscribe"
 	dialer := ws.Dialer{}
 	ctx := context.Background()
+	log.Println("DIAL " + url)
 	conn, _, _, err := dialer.Dial(ctx, url)
 	if err != nil {
 		panic(err)
 	}
 
+	// first message must be auth
 	acc := &auth.Account{ID: "comet_tester"}
 	token := iauth.AccountToToken(acc)
-
-	if err := wsutil.WriteClientText(conn, []byte(fmt.Sprintf(`{"token":"%s"}`, token))); err != nil {
+	uplink := &comet.Uplink{
+		T: comet.MsgType_AUTH,
+		Auth: &comet.Auth{
+			Token: token,
+		},
+	}
+	jsonBytes, _ := jsonMarshal(uplink)
+	jsonStr := string(jsonBytes)
+	log.Println("TX " + jsonStr)
+	if err := wsutil.WriteClientText(conn, jsonBytes); err != nil {
 		panic(err)
 	}
 
+	// processing loop
 	for {
 		buf, err := wsutil.ReadServerText(conn)
 		if err != nil {
 			panic(err)
 		}
-		log.Println("RAW " + string(buf))
+		log.Println("RX " + string(buf))
 
-		var push comet.ServerPush
-		if err := jsonUnmarshal(buf, &push); err != nil {
+		var downlink comet.Downlink
+		if err := jsonUnmarshal(buf, &downlink); err != nil {
 			panic(err)
 		}
-		if push.T == comet.ServerPush_HEARTBEAT {
+		if downlink.T == comet.MsgType_HB {
+			// when receiving a downlink heartbeat, send an uplink heartbeat
 			if err := wsutil.WriteClientText(conn, []byte("{}")); err != nil {
 				panic(err)
 			}
 			continue
 		}
-		log.Printf("JSON %v", json.Stringify(push))
 	}
 }

@@ -4,30 +4,52 @@ package comet;
 
 service Comet {
     rpc Publish(PublishReq) returns (PublishRes);
-    rpc Subscribe(stream Heartbeat) returns (stream ServerPush);
-}
-
-message Heartbeat {
-    string token = 1;
-}
-
-message ServerPush {
-    enum Type {
-        HEARTBEAT = 0;
-        PUBLISH_NOTE = 1;
-    }
-    Type t = 1;
-    PublishNote publish_note = 2;
-}
-
-message PublishNote {
-    string topic = 1;
-    string text = 2;
+    rpc Subscribe(stream Uplink) returns (stream Downlink);
 }
 
 message PublishReq {
-    PublishNote publish_note = 1;
+    string uid = 1; // user identity
+    string evt = 2; // JSON encoded event
 }
 
 message PublishRes {
+}
+
+message Uplink {
+    MsgType t = 1;
+    Heartbeat hb = 2;
+    Auth auth = 3;
+    JoinRoom join = 4;
+}
+
+message Downlink {
+    MsgType t = 1;
+    Heartbeat hb = 2;
+    ServerPush push = 3;
+}
+
+enum MsgType {
+    // Heartbeat is sent on downlink and uplink, to keep the persistent connection alive
+    HB = 0;
+    // Auth is sent on uplink as the first message for Comet.Subscribe
+    AUTH = 1;
+    // JoinRoom is sent on uplink to join the specified room
+    JOIN = 2;
+    // ServerPush is sent on downlink to push event to client
+    PUSH = 3;
+}
+
+message Heartbeat {
+}
+
+message Auth {
+    string token = 1;
+}
+
+message JoinRoom {
+    string rid = 1; // room identity
+}
+
+message ServerPush {
+    string evt = 1; // JSON encoded event
 }
