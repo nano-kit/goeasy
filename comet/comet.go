@@ -19,7 +19,7 @@ type Comet struct {
 	g *pubsub.Group
 }
 
-func New() *Comet {
+func NewComet() *Comet {
 	return &Comet{
 		g: pubsub.New(),
 	}
