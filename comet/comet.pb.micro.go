@@ -44,6 +44,7 @@ func NewCometEndpoints() []*api.Endpoint {
 type CometService interface {
 	Publish(ctx context.Context, in *PublishReq, opts ...client.CallOption) (*PublishRes, error)
 	Subscribe(ctx context.Context, opts ...client.CallOption) (Comet_SubscribeService, error)
+	Broadcast(ctx context.Context, in *BroadcastReq, opts ...client.CallOption) (*BroadcastRes, error)
 }
 
 type cometService struct {
@@ -119,17 +120,29 @@ func (x *cometServiceSubscribe) Recv() (*Downlink, error) {
 	return m, nil
 }
 
+func (c *cometService) Broadcast(ctx context.Context, in *BroadcastReq, opts ...client.CallOption) (*BroadcastRes, error) {
+	req := c.c.NewRequest(c.name, "Comet.Broadcast", in)
+	out := new(BroadcastRes)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Server API for Comet service
 
 type CometHandler interface {
 	Publish(context.Context, *PublishReq, *PublishRes) error
 	Subscribe(context.Context, Comet_SubscribeStream) error
+	Broadcast(context.Context, *BroadcastReq, *BroadcastRes) error
 }
 
 func RegisterCometHandler(s server.Server, hdlr CometHandler, opts ...server.HandlerOption) error {
 	type comet interface {
 		Publish(ctx context.Context, in *PublishReq, out *PublishRes) error
 		Subscribe(ctx context.Context, stream server.Stream) error
+		Broadcast(ctx context.Context, in *BroadcastReq, out *BroadcastRes) error
 	}
 	type Comet struct {
 		comet
@@ -189,4 +202,8 @@ func (x *cometSubscribeStream) Recv() (*Uplink, error) {
 		return nil, err
 	}
 	return m, nil
+}
+
+func (h *cometHandler) Broadcast(ctx context.Context, in *BroadcastReq, out *BroadcastRes) error {
+	return h.CometHandler.Broadcast(ctx, in, out)
 }

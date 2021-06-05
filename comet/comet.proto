@@ -5,6 +5,7 @@ package comet;
 service Comet {
     rpc Publish(PublishReq) returns (PublishRes);
     rpc Subscribe(stream Uplink) returns (stream Downlink);
+    rpc Broadcast(BroadcastReq) returns (BroadcastRes);
 }
 
 message PublishReq {
@@ -13,6 +14,14 @@ message PublishReq {
 }
 
 message PublishRes {
+}
+
+message BroadcastReq {
+    string rid = 1; // room identity, default (empty) to do a world broadcast
+    string evt = 2; // JSON encoded event
+}
+
+message BroadcastRes {
 }
 
 message Uplink {

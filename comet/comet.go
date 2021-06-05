@@ -2,11 +2,12 @@ package comet
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
 	"github.com/micro/go-micro/v2/auth"
-	"github.com/micro/go-micro/v2/errors"
+	errs "github.com/micro/go-micro/v2/errors"
 	"github.com/micro/go-micro/v2/logger"
 	"github.com/micro/go-micro/v2/util/pubsub"
 	iauth "github.com/nano-kit/goeasy/internal/auth"
@@ -55,22 +56,44 @@ func (c *Comet) Publish(ctx context.Context, req *PublishReq, res *PublishRes) e
 }
 
 func (c *Comet) Subscribe(ctx context.Context, stream Comet_SubscribeStream) error {
+	// the first message we recv must be auth
 	req, err := stream.Recv()
 	if err != nil {
-		return errors.BadRequest("incorrect-protocol", "stream recv: %v", err)
+		return errs.BadRequest("incorrect-protocol", "stream recv: %v", err)
 	}
+	token := req.GetAuth().GetToken()
 	if req.T != MsgType_AUTH {
-		return errors.BadRequest("incorrect-protocol", "expect message type AUTH: %v", req)
+		return errs.BadRequest("incorrect-protocol", "expect message type AUTH but got %v: %v", req.T, token)
 	}
-	account, ok := iauth.AccountFromToken(req.GetAuth().GetToken())
+	account, ok := iauth.AccountFromToken(token)
 	if !ok {
-		return errors.BadRequest("unidentified-subscriber", "")
+		return errs.BadRequest("unidentified-subscriber", "auth token should be JWT: %v", token)
 	}
 	logger.Infof("subscriber %q enter", account.ID)
 
 	heartbeat := time.Now()
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
+
+	// create a session with account ID and room ID (if there is any)
+	ses := rmgr.NewSession(account.ID, req.GetJoin().GetRid(), cancel)
+	oses, err := c.rm.Put(ses)
+	defer c.rm.DelSession(account.ID)
+	if errors.Is(err, rmgr.ErrExisted) {
+		logger.Warnf("about to kick out last session: %v", err)
+		oses.Close()
+
+		// wait until last session quit
+		for c.rm.FindSession(account.ID) != nil {
+			time.Sleep(100 * time.Millisecond)
+		}
+		// now there is no existing session
+		_, err = c.rm.Put(ses)
+	}
+	if err != nil {
+		return errs.InternalServerError("broken-session", "%v", err)
+	}
+
 	ctx = context.WithValue(ctx, streamCtxKey{}, streamCtx{account, stream, cancel, &heartbeat})
 	c.g.Go(ctx, c.recv)
 	c.g.Subscribe(ctx, account.ID, c.send, pubsub.WithTicker(heartbeatDuration, c.tick))
@@ -88,8 +111,10 @@ func (c *Comet) recv(ctx context.Context) (err error) {
 		logger.Debugf("RX %q %v", sc.account.ID, uplink)
 		*sc.heartbeat = time.Now()
 		switch uplink.T {
-		case MsgType_HB:
 		case MsgType_JOIN:
+			if _, err = c.rm.JoinRoom(sc.account.ID, uplink.GetJoin().GetRid()); err != nil {
+				return fmt.Errorf("process %q uplink message: %v", sc.account.ID, err)
+			}
 		}
 	}
 }
@@ -129,4 +154,32 @@ func (c *Comet) send(ctx context.Context, msg pubsub.Message) (bool, error) {
 		return false, fmt.Errorf("server push %q: stream send: %v", sc.account.ID, err)
 	}
 	return true, nil
+}
+
+func (c *Comet) Broadcast(ctx context.Context, req *BroadcastReq, res *BroadcastRes) error {
+	// world broadcast
+	if req.Rid == rmgr.World {
+		c.rm.Enumerate(func(ses *rmgr.Session) {
+			p := &PublishReq{
+				Uid: ses.UID(),
+				Evt: req.Evt,
+			}
+			c.g.Publish(ctx, &serverPush{p})
+		})
+		return nil
+	}
+
+	// room broadcast
+	room := c.rm.FindRoom(req.Rid)
+	if room == nil {
+		return nil
+	}
+	room.Enumerate(func(ses *rmgr.Session) {
+		p := &PublishReq{
+			Uid: ses.UID(),
+			Evt: req.Evt,
+		}
+		c.g.Publish(ctx, &serverPush{p})
+	})
+	return nil
 }

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"sync"
+	"time"
 )
 
 var (
@@ -23,9 +24,9 @@ type Session struct {
 	uid string
 	// which room the session belongs
 	rid string
-	// session birth timestamp
+	// session birth timestamp in milliseconds
 	birth int64
-	// last heartbeat timestamp
+	// last heartbeat timestamp in milliseconds
 	heartbeat int64
 	// call to cancel the subscription
 	cancel context.CancelFunc
@@ -63,6 +64,21 @@ func newRoom(rid string) *Room {
 		rid:      rid,
 		sessions: make(map[string]*Session, 2),
 	}
+}
+
+func NewSession(uid, rid string, cancel context.CancelFunc) *Session {
+	t := makeTimestamp()
+	return &Session{
+		uid:       uid,
+		rid:       rid,
+		birth:     t,
+		heartbeat: t,
+		cancel:    cancel,
+	}
+}
+
+func makeTimestamp() int64 {
+	return time.Now().UnixNano() / int64(time.Millisecond)
 }
 
 // Put a session into the bucket, returns the last session
@@ -202,4 +218,12 @@ func (b *Bucket) DelSession(uid string) {
 	if room != nil && room.del(ses) {
 		b.delRoom(ses.rid)
 	}
+}
+
+func (b *Bucket) Enumerate(accept func(*Session)) {
+	b.RLock()
+	for _, ses := range b.sessions {
+		accept(ses)
+	}
+	b.RUnlock()
 }

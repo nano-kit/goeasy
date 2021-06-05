@@ -3,7 +3,9 @@ package main
 import (
 	"bytes"
 	"context"
+	"flag"
 	"log"
+	"strings"
 
 	"github.com/gobwas/ws"
 	"github.com/gobwas/ws/wsutil"
@@ -33,7 +35,14 @@ func jsonUnmarshal(data []byte, m proto.Message) error {
 	return jsonUnmarshaler.Unmarshal(bytes.NewReader(data), m)
 }
 
+var (
+	uid = flag.String("uid", "comet_tester", "user identity")
+	rid = flag.String("rid", "", "room identity")
+)
+
 func main() {
+	flag.Parse()
+
 	// connect to the websocket host
 	url := "ws://127.0.0.1:8080/comet/subscribe"
 	dialer := ws.Dialer{}
@@ -45,12 +54,15 @@ func main() {
 	}
 
 	// first message must be auth
-	acc := &auth.Account{ID: "comet_tester"}
+	acc := &auth.Account{ID: *uid}
 	token := iauth.AccountToToken(acc)
 	uplink := &comet.Uplink{
 		T: comet.MsgType_AUTH,
 		Auth: &comet.Auth{
 			Token: token,
+		},
+		Join: &comet.JoinRoom{
+			Rid: *rid,
 		},
 	}
 	jsonBytes, _ := jsonMarshal(uplink)
@@ -78,6 +90,17 @@ func main() {
 				panic(err)
 			}
 			continue
+		}
+		if strings.HasPrefix(downlink.Push.Evt, "#join:") {
+			buf, _ := jsonMarshal(&comet.Uplink{
+				T: comet.MsgType_JOIN,
+				Join: &comet.JoinRoom{
+					Rid: strings.TrimPrefix(downlink.Push.Evt, "#join:"),
+				},
+			})
+			if err := wsutil.WriteClientText(conn, buf); err != nil {
+				panic(err)
+			}
 		}
 	}
 }

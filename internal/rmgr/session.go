@@ -5,3 +5,7 @@ func (s *Session) Close() {
 		s.cancel()
 	}
 }
+
+func (s *Session) UID() string {
+	return s.uid
+}

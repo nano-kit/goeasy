@@ -36,3 +36,11 @@ func (r *Room) close() {
 	}
 	r.RUnlock()
 }
+
+func (r *Room) Enumerate(accept func(*Session)) {
+	r.RLock()
+	for _, ses := range r.sessions {
+		accept(ses)
+	}
+	r.RUnlock()
+}
