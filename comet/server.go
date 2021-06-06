@@ -25,7 +25,9 @@ func (s *Server) Run() {
 	srvOpts = append(srvOpts, micro.Name(s.Name()))
 	service := micro.NewService(srvOpts...)
 
-	RegisterCometHandler(service.Server(), NewComet())
+	comet := NewComet()
+	RegisterCometHandler(service.Server(), comet)
+	micro.RegisterSubscriber(s.Name(), service.Server(), comet.onEvent)
 
 	// Run micro server
 	if err := service.Run(); err != nil {

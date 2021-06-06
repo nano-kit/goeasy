@@ -82,3 +82,9 @@ message JoinRoom {
 message ServerPush {
     string evt = 1; // JSON encoded event
 }
+
+message Event {
+    string uid = 1;
+    string rid = 2;
+    string evt = 3;
+}

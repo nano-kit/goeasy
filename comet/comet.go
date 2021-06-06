@@ -229,3 +229,21 @@ func dumpRoom(room *rmgr.Room) *Room {
 	}
 	return &Room{Rid: room.RID(), Room: ss}
 }
+
+// onEvent will be executed when a event is received.
+// Event is published to a topic which any comet instance is subscribing. As
+// every user is landing upon a comet, the event will finally reach that user.
+// Event that designates to room or world will also reach every user within.
+func (c *Comet) onEvent(ctx context.Context, event *Event) error {
+	if event.Uid != "" {
+		return c.Publish(ctx, &PublishReq{
+			Uid: event.Uid,
+			Evt: event.Evt,
+		}, new(PublishRes))
+	}
+
+	return c.Broadcast(ctx, &BroadcastReq{
+		Rid: event.Rid,
+		Evt: event.Evt,
+	}, new(BroadcastRes))
+}
