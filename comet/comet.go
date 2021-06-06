@@ -9,6 +9,7 @@ import (
 	"github.com/micro/go-micro/v2/auth"
 	errs "github.com/micro/go-micro/v2/errors"
 	"github.com/micro/go-micro/v2/logger"
+	"github.com/micro/go-micro/v2/metadata"
 	"github.com/micro/go-micro/v2/util/pubsub"
 	iauth "github.com/nano-kit/goeasy/internal/auth"
 	"github.com/nano-kit/goeasy/internal/rmgr"
@@ -69,7 +70,8 @@ func (c *Comet) Subscribe(ctx context.Context, stream Comet_SubscribeStream) err
 	if !ok {
 		return errs.BadRequest("unidentified-subscriber", "auth token should be JWT: %v", token)
 	}
-	logger.Infof("subscriber %q enter", account.ID)
+	md, _ := metadata.FromContext(ctx)
+	logger.Infof("subscriber %q enter with meta data: %v", account.ID, md)
 
 	heartbeat := time.Now()
 	ctx, cancel := context.WithCancel(ctx)

@@ -86,7 +86,13 @@ func makeTime(timestampMs int64) time.Time {
 	return time.Unix(0, timestampMs*int64(time.Millisecond))
 }
 
-// Put a session into the bucket, returns the last session
+// Put a session into the bucket, returns the last session.
+// The bucket could be in an inconsistent state when error happens, to ensure
+// a session is always removed from bucket when it is not needed, do as below:
+//
+//	_, err := bucket.Put(rmgr.NewSession(uid))
+//	defer bucket.DelSession(uid)
+//	if err != nil { /* handle error and quit */ }
 func (b *Bucket) Put(ses *Session) (*Session, error) {
 	errf := func(err error) error {
 		return fmt.Errorf("put %v into the bucket: %w", ses, err)
