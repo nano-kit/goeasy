@@ -45,6 +45,7 @@ type CometService interface {
 	Publish(ctx context.Context, in *PublishReq, opts ...client.CallOption) (*PublishRes, error)
 	Subscribe(ctx context.Context, opts ...client.CallOption) (Comet_SubscribeService, error)
 	Broadcast(ctx context.Context, in *BroadcastReq, opts ...client.CallOption) (*BroadcastRes, error)
+	DumpSession(ctx context.Context, in *DumpSessionReq, opts ...client.CallOption) (*DumpSessionRes, error)
 }
 
 type cometService struct {
@@ -130,12 +131,23 @@ func (c *cometService) Broadcast(ctx context.Context, in *BroadcastReq, opts ...
 	return out, nil
 }
 
+func (c *cometService) DumpSession(ctx context.Context, in *DumpSessionReq, opts ...client.CallOption) (*DumpSessionRes, error) {
+	req := c.c.NewRequest(c.name, "Comet.DumpSession", in)
+	out := new(DumpSessionRes)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Server API for Comet service
 
 type CometHandler interface {
 	Publish(context.Context, *PublishReq, *PublishRes) error
 	Subscribe(context.Context, Comet_SubscribeStream) error
 	Broadcast(context.Context, *BroadcastReq, *BroadcastRes) error
+	DumpSession(context.Context, *DumpSessionReq, *DumpSessionRes) error
 }
 
 func RegisterCometHandler(s server.Server, hdlr CometHandler, opts ...server.HandlerOption) error {
@@ -143,6 +155,7 @@ func RegisterCometHandler(s server.Server, hdlr CometHandler, opts ...server.Han
 		Publish(ctx context.Context, in *PublishReq, out *PublishRes) error
 		Subscribe(ctx context.Context, stream server.Stream) error
 		Broadcast(ctx context.Context, in *BroadcastReq, out *BroadcastRes) error
+		DumpSession(ctx context.Context, in *DumpSessionReq, out *DumpSessionRes) error
 	}
 	type Comet struct {
 		comet
@@ -206,4 +219,8 @@ func (x *cometSubscribeStream) Recv() (*Uplink, error) {
 
 func (h *cometHandler) Broadcast(ctx context.Context, in *BroadcastReq, out *BroadcastRes) error {
 	return h.CometHandler.Broadcast(ctx, in, out)
+}
+
+func (h *cometHandler) DumpSession(ctx context.Context, in *DumpSessionReq, out *DumpSessionRes) error {
+	return h.CometHandler.DumpSession(ctx, in, out)
 }

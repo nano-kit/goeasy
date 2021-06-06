@@ -1,6 +1,9 @@
 package rmgr
 
-import "fmt"
+import (
+	"fmt"
+	"sort"
+)
 
 func (r *Room) put(ses *Session) error {
 	errf := func(err error) error {
@@ -43,4 +46,22 @@ func (r *Room) Enumerate(accept func(*Session)) {
 		accept(ses)
 	}
 	r.RUnlock()
+}
+
+func (r *Room) SessionsSnapshot() []*Session {
+	r.RLock()
+	ss := make([]*Session, 0, len(r.sessions))
+	for _, ses := range r.sessions {
+		ss = append(ss, ses)
+	}
+	r.RUnlock()
+	// sort the sessions based on birth desc
+	sort.Slice(ss, func(i, j int) bool {
+		return ss[i].birth > ss[j].birth
+	})
+	return ss
+}
+
+func (r *Room) RID() string {
+	return r.rid
 }

@@ -106,14 +106,16 @@ func (c *Comet) recv(ctx context.Context) (err error) {
 	for {
 		var uplink *Uplink
 		if uplink, err = sc.stream.Recv(); err != nil {
-			return fmt.Errorf("process %q uplink message: stream recv: %v", sc.account.ID, err)
+			return fmt.Errorf("process %q uplink: stream recv: %v", sc.account.ID, err)
 		}
 		logger.Debugf("RX %q %v", sc.account.ID, uplink)
+		// update heartbeat on any uplink message
 		*sc.heartbeat = time.Now()
+		// handle uplink commands
 		switch uplink.T {
 		case MsgType_JOIN:
 			if _, err = c.rm.JoinRoom(sc.account.ID, uplink.GetJoin().GetRid()); err != nil {
-				return fmt.Errorf("process %q uplink message: %v", sc.account.ID, err)
+				return fmt.Errorf("process %q uplink: %v", sc.account.ID, err)
 			}
 		}
 	}
@@ -129,14 +131,21 @@ func (c *Comet) tick(ctx context.Context) (err error) {
 	if sc.heartbeat == nil {
 		return fmt.Errorf("server tick %q: no heartbeat", sc.account.ID)
 	}
-	if time.Since(*sc.heartbeat) > 2*heartbeatDuration {
+
+	// kick out if idle for a long time
+	idle := time.Since(*sc.heartbeat)
+	if idle > 3*heartbeatDuration {
 		return fmt.Errorf("server tick %q: heartbeat delays", sc.account.ID)
 	}
-	if err := sc.stream.Send(&Downlink{
-		T:  MsgType_HB,
-		Hb: &Heartbeat{},
-	}); err != nil {
-		return fmt.Errorf("server tick %q: send heartbeat: %v", sc.account.ID, err)
+
+	// request uplink probe by sending a downlink heartbeat
+	if idle > heartbeatDuration {
+		if err := sc.stream.Send(&Downlink{
+			T:  MsgType_HB,
+			Hb: &Heartbeat{},
+		}); err != nil {
+			return fmt.Errorf("server tick %q: send heartbeat: %v", sc.account.ID, err)
+		}
 	}
 	return nil
 }
@@ -182,4 +191,39 @@ func (c *Comet) Broadcast(ctx context.Context, req *BroadcastReq, res *Broadcast
 		c.g.Publish(ctx, &serverPush{p})
 	})
 	return nil
+}
+
+func (c *Comet) DumpSession(ctx context.Context, req *DumpSessionReq, res *DumpSessionRes) error {
+	sessions := c.rm.SessionsSnapshot()
+	world := make([]*Session, 0, len(sessions))
+	for _, ses := range sessions {
+		world = append(world, &Session{
+			Uid:   ses.UID(),
+			Rid:   ses.RID(),
+			Birth: ses.Birth(),
+		})
+	}
+
+	rooms := c.rm.RoomsSnapshot()
+	rr := make([]*Room, 0, len(rooms))
+	for _, room := range rooms {
+		rr = append(rr, dumpRoom(room))
+	}
+
+	res.World = world
+	res.Rooms = rr
+	return nil
+}
+
+func dumpRoom(room *rmgr.Room) *Room {
+	sessions := room.SessionsSnapshot()
+	ss := make([]*Session, 0, len(sessions))
+	for _, ses := range sessions {
+		ss = append(ss, &Session{
+			Uid:   ses.UID(),
+			Rid:   ses.RID(),
+			Birth: ses.Birth(),
+		})
+	}
+	return &Room{Rid: room.RID(), Room: ss}
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"sort"
 	"sync"
 	"time"
 )
@@ -79,6 +80,10 @@ func NewSession(uid, rid string, cancel context.CancelFunc) *Session {
 
 func makeTimestamp() int64 {
 	return time.Now().UnixNano() / int64(time.Millisecond)
+}
+
+func makeTime(timestampMs int64) time.Time {
+	return time.Unix(0, timestampMs*int64(time.Millisecond))
 }
 
 // Put a session into the bucket, returns the last session
@@ -226,4 +231,32 @@ func (b *Bucket) Enumerate(accept func(*Session)) {
 		accept(ses)
 	}
 	b.RUnlock()
+}
+
+func (b *Bucket) SessionsSnapshot() []*Session {
+	b.RLock()
+	ss := make([]*Session, 0, len(b.sessions))
+	for _, ses := range b.sessions {
+		ss = append(ss, ses)
+	}
+	b.RUnlock()
+	// sort the sessions based on birth desc
+	sort.Slice(ss, func(i, j int) bool {
+		return ss[i].birth > ss[j].birth
+	})
+	return ss
+}
+
+func (b *Bucket) RoomsSnapshot() []*Room {
+	b.RLock()
+	rs := make([]*Room, 0, len(b.rooms))
+	for _, room := range b.rooms {
+		rs = append(rs, room)
+	}
+	b.RUnlock()
+	// sort the rooms based on rid
+	sort.Slice(rs, func(i, j int) bool {
+		return rs[i].rid < rs[j].rid
+	})
+	return rs
 }

@@ -6,6 +6,7 @@ service Comet {
     rpc Publish(PublishReq) returns (PublishRes);
     rpc Subscribe(stream Uplink) returns (stream Downlink);
     rpc Broadcast(BroadcastReq) returns (BroadcastRes);
+    rpc DumpSession(DumpSessionReq) returns (DumpSessionRes);
 }
 
 message PublishReq {
@@ -22,6 +23,25 @@ message BroadcastReq {
 }
 
 message BroadcastRes {
+}
+
+message DumpSessionReq {
+}
+
+message DumpSessionRes {
+    repeated Session world = 1;
+    repeated Room rooms = 2;
+}
+
+message Room {
+    string rid = 1;
+    repeated Session room = 2;
+}
+
+message Session {
+    string uid = 1;
+    string rid = 2;
+    string birth = 3;
 }
 
 message Uplink {
