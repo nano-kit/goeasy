@@ -2,24 +2,43 @@ syntax = "proto3";
 
 package comet;
 
+// Comet is a landing place where clients are continuously subscribing for downlink messages
+// by a websocket or grpc connection.
 service Comet {
-    rpc Publish(PublishReq) returns (PublishRes);
+    // Subscribe for downlink messages while also sending uplink messages.
     rpc Subscribe(stream Uplink) returns (stream Downlink);
+    // Publish an event to a specific client who is landing on this comet instance.
+    // Publish or Broadcast is not reliable innately! The event may not reach the client in
+    // case of comet restarts or broken connection. So it is not necessary to retry automatically.
+    // Usually you should design a SYNC protocol between client and server to achieve the
+    // reliable broadcasting.
+    rpc Publish(PublishReq) returns (PublishRes);
+    // Broadcast an event to all the clients in a specific room on this comet instance.
     rpc Broadcast(BroadcastReq) returns (BroadcastRes);
+    // Dump all the clients' session on this comet instance.
     rpc DumpSession(DumpSessionReq) returns (DumpSessionRes);
 }
 
 message PublishReq {
-    string uid = 1; // user identity
-    string evt = 2; // JSON encoded event
+    // The unique user identity.
+    // Please note if an end-user has multiple terminals such as a phone, a pad, and a desktop,
+    // every terminal should use a unique identity if these devices are treated differently.
+    string uid = 1;
+    // The server-sent event goes through the downlink to the client.
+    // Its content is opaque, which means what is published here reaches client unmodified.
+    // Only the concrete business can explain this event.
+    string evt = 2;
 }
 
 message PublishRes {
 }
 
 message BroadcastReq {
-    string rid = 1; // room identity, default (empty) to do a world broadcast
-    string evt = 2; // JSON encoded event
+    // room identity, default (empty) to do a world broadcast, which means all the clients on
+    // this comet instance are published with the event.
+    string rid = 1;
+    // refer to PublishReq.evt
+    string evt = 2;
 }
 
 message BroadcastRes {
@@ -45,6 +64,7 @@ message Session {
 }
 
 message Uplink {
+    // t is used to differentiate what this uplink message is
     MsgType t = 1;
     Heartbeat hb = 2;
     Auth auth = 3;
@@ -52,6 +72,7 @@ message Uplink {
 }
 
 message Downlink {
+    // t is used to differentiate what this downlink message is
     MsgType t = 1;
     Heartbeat hb = 2;
     ServerPush push = 3;
@@ -72,19 +93,27 @@ message Heartbeat {
 }
 
 message Auth {
+    // Usually a JWT is used. Comet.Subscribe extracts user's account information from this token.
     string token = 1;
 }
 
 message JoinRoom {
-    string rid = 1; // room identity
+    // room identity, default (empty) to quit any room and stay only in the world.
+    string rid = 1;
 }
 
 message ServerPush {
-    string evt = 1; // JSON encoded event
+    // refer to PublishReq.evt
+    string evt = 1;
 }
 
+// Event is the asynchronous message using Go-Micro's message broker interface.
+// refer to Comet.onEvent
 message Event {
+    // refer to PublishReq.uid
     string uid = 1;
+    // refer to BroadcastReq.rid
     string rid = 2;
+    // refer to PublishReq.evt
     string evt = 3;
 }

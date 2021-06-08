@@ -42,9 +42,17 @@ func NewCometEndpoints() []*api.Endpoint {
 // Client API for Comet service
 
 type CometService interface {
-	Publish(ctx context.Context, in *PublishReq, opts ...client.CallOption) (*PublishRes, error)
+	// Subscribe for downlink messages while also sending uplink messages.
 	Subscribe(ctx context.Context, opts ...client.CallOption) (Comet_SubscribeService, error)
+	// Publish an event to a specific client who is landing on this comet instance.
+	// Publish or Broadcast is not reliable innately! The event may not reach the client in
+	// case of comet restarts or broken connection. So it is not necessary to retry automatically.
+	// Usually you should design a SYNC protocol between client and server to achieve the
+	// reliable broadcasting.
+	Publish(ctx context.Context, in *PublishReq, opts ...client.CallOption) (*PublishRes, error)
+	// Broadcast an event to all the clients in a specific room on this comet instance.
 	Broadcast(ctx context.Context, in *BroadcastReq, opts ...client.CallOption) (*BroadcastRes, error)
+	// Dump all the clients' session on this comet instance.
 	DumpSession(ctx context.Context, in *DumpSessionReq, opts ...client.CallOption) (*DumpSessionRes, error)
 }
 
@@ -58,16 +66,6 @@ func NewCometService(name string, c client.Client) CometService {
 		c:    c,
 		name: name,
 	}
-}
-
-func (c *cometService) Publish(ctx context.Context, in *PublishReq, opts ...client.CallOption) (*PublishRes, error) {
-	req := c.c.NewRequest(c.name, "Comet.Publish", in)
-	out := new(PublishRes)
-	err := c.c.Call(ctx, req, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
 }
 
 func (c *cometService) Subscribe(ctx context.Context, opts ...client.CallOption) (Comet_SubscribeService, error) {
@@ -121,6 +119,16 @@ func (x *cometServiceSubscribe) Recv() (*Downlink, error) {
 	return m, nil
 }
 
+func (c *cometService) Publish(ctx context.Context, in *PublishReq, opts ...client.CallOption) (*PublishRes, error) {
+	req := c.c.NewRequest(c.name, "Comet.Publish", in)
+	out := new(PublishRes)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *cometService) Broadcast(ctx context.Context, in *BroadcastReq, opts ...client.CallOption) (*BroadcastRes, error) {
 	req := c.c.NewRequest(c.name, "Comet.Broadcast", in)
 	out := new(BroadcastRes)
@@ -144,16 +152,24 @@ func (c *cometService) DumpSession(ctx context.Context, in *DumpSessionReq, opts
 // Server API for Comet service
 
 type CometHandler interface {
-	Publish(context.Context, *PublishReq, *PublishRes) error
+	// Subscribe for downlink messages while also sending uplink messages.
 	Subscribe(context.Context, Comet_SubscribeStream) error
+	// Publish an event to a specific client who is landing on this comet instance.
+	// Publish or Broadcast is not reliable innately! The event may not reach the client in
+	// case of comet restarts or broken connection. So it is not necessary to retry automatically.
+	// Usually you should design a SYNC protocol between client and server to achieve the
+	// reliable broadcasting.
+	Publish(context.Context, *PublishReq, *PublishRes) error
+	// Broadcast an event to all the clients in a specific room on this comet instance.
 	Broadcast(context.Context, *BroadcastReq, *BroadcastRes) error
+	// Dump all the clients' session on this comet instance.
 	DumpSession(context.Context, *DumpSessionReq, *DumpSessionRes) error
 }
 
 func RegisterCometHandler(s server.Server, hdlr CometHandler, opts ...server.HandlerOption) error {
 	type comet interface {
-		Publish(ctx context.Context, in *PublishReq, out *PublishRes) error
 		Subscribe(ctx context.Context, stream server.Stream) error
+		Publish(ctx context.Context, in *PublishReq, out *PublishRes) error
 		Broadcast(ctx context.Context, in *BroadcastReq, out *BroadcastRes) error
 		DumpSession(ctx context.Context, in *DumpSessionReq, out *DumpSessionRes) error
 	}
@@ -166,10 +182,6 @@ func RegisterCometHandler(s server.Server, hdlr CometHandler, opts ...server.Han
 
 type cometHandler struct {
 	CometHandler
-}
-
-func (h *cometHandler) Publish(ctx context.Context, in *PublishReq, out *PublishRes) error {
-	return h.CometHandler.Publish(ctx, in, out)
 }
 
 func (h *cometHandler) Subscribe(ctx context.Context, stream server.Stream) error {
@@ -215,6 +227,10 @@ func (x *cometSubscribeStream) Recv() (*Uplink, error) {
 		return nil, err
 	}
 	return m, nil
+}
+
+func (h *cometHandler) Publish(ctx context.Context, in *PublishReq, out *PublishRes) error {
+	return h.CometHandler.Publish(ctx, in, out)
 }
 
 func (h *cometHandler) Broadcast(ctx context.Context, in *BroadcastReq, out *BroadcastRes) error {
