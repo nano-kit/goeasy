@@ -27,8 +27,6 @@ type Session struct {
 	rid string
 	// session birth timestamp in milliseconds
 	birth int64
-	// last heartbeat timestamp in milliseconds
-	heartbeat int64
 	// call to cancel the subscription
 	cancel context.CancelFunc
 }
@@ -70,11 +68,10 @@ func newRoom(rid string) *Room {
 func NewSession(uid, rid string, cancel context.CancelFunc) *Session {
 	t := makeTimestamp()
 	return &Session{
-		uid:       uid,
-		rid:       rid,
-		birth:     t,
-		heartbeat: t,
-		cancel:    cancel,
+		uid:    uid,
+		rid:    rid,
+		birth:  t,
+		cancel: cancel,
 	}
 }
 

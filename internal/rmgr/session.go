@@ -19,7 +19,3 @@ func (s *Session) RID() string {
 func (s *Session) Birth() string {
 	return makeTime(s.birth).Format(time.StampMilli)
 }
-
-func (s *Session) Heartbeat() string {
-	return makeTime(s.heartbeat).Format(time.StampMilli)
-}

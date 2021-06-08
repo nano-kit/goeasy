@@ -31,10 +31,10 @@ func NewComet() *Comet {
 }
 
 type streamCtx struct {
-	account   *auth.Account
-	stream    Comet_SubscribeStream
-	cancel    context.CancelFunc
-	heartbeat *time.Time
+	account        *auth.Account
+	stream         Comet_SubscribeStream
+	cancel         context.CancelFunc
+	uplinkActivity *time.Time
 }
 
 type streamCtxKey struct{}
@@ -73,7 +73,7 @@ func (c *Comet) Subscribe(ctx context.Context, stream Comet_SubscribeStream) err
 	md, _ := metadata.FromContext(ctx)
 	logger.Infof("subscriber %q enter with meta data: %v", account.ID, md)
 
-	heartbeat := time.Now()
+	uplinkActivity := time.Now()
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
@@ -96,7 +96,7 @@ func (c *Comet) Subscribe(ctx context.Context, stream Comet_SubscribeStream) err
 		return errs.InternalServerError("broken-session", "%v", err)
 	}
 
-	ctx = context.WithValue(ctx, streamCtxKey{}, streamCtx{account, stream, cancel, &heartbeat})
+	ctx = context.WithValue(ctx, streamCtxKey{}, streamCtx{account, stream, cancel, &uplinkActivity})
 	c.g.Go(ctx, c.recv)
 	c.g.Subscribe(ctx, account.ID, c.send, pubsub.WithTicker(heartbeatDuration, c.tick))
 	return nil
@@ -111,8 +111,8 @@ func (c *Comet) recv(ctx context.Context) (err error) {
 			return fmt.Errorf("process %q uplink: stream recv: %v", sc.account.ID, err)
 		}
 		logger.Debugf("RX %q %v", sc.account.ID, uplink)
-		// update heartbeat on any uplink message
-		*sc.heartbeat = time.Now()
+		// update uplink activity on any uplink message
+		*sc.uplinkActivity = time.Now()
 		// handle uplink commands
 		switch uplink.T {
 		case MsgType_JOIN:
@@ -130,18 +130,15 @@ func (c *Comet) tick(ctx context.Context) (err error) {
 			sc.cancel()
 		}
 	}()
-	if sc.heartbeat == nil {
-		return fmt.Errorf("server tick %q: no heartbeat", sc.account.ID)
-	}
 
 	// kick out if idle for a long time
-	idle := time.Since(*sc.heartbeat)
+	idle := time.Since(*sc.uplinkActivity)
 	if idle > 3*heartbeatDuration {
-		return fmt.Errorf("server tick %q: heartbeat delays", sc.account.ID)
+		return fmt.Errorf("server tick %q: hasn't been heard of for a long time", sc.account.ID)
 	}
 
 	// request uplink probe by sending a downlink heartbeat
-	if idle > heartbeatDuration {
+	if idle >= heartbeatDuration-time.Second {
 		if err := sc.stream.Send(&Downlink{
 			T:  MsgType_HB,
 			Hb: &Heartbeat{},
