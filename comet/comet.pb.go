@@ -29,8 +29,9 @@ const (
 	MsgType_AUTH MsgType = 1
 	// JoinRoom is sent on uplink to join the specified room. JOIN can be sent together with AUTH,
 	// which means connect to comet and join the specified room immediately. A client follows
-	// only one room at a time. If a client is already in a room, JOIN another room implies
-	// quitting the last room where the client stays.
+	// only one room at a time. If a client is already in a room, JOIN a different room implies
+	// quitting the last room where the client stays; JOIN the same room is a no-op. A connected
+	// client is always considered in the world in spite of maybe in a room.
 	MsgType_JOIN MsgType = 2
 	// ServerPush is sent on downlink to push event to client
 	MsgType_PUSH MsgType = 3
