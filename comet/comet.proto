@@ -83,7 +83,10 @@ enum MsgType {
     HB = 0;
     // Auth is sent on uplink as the first message for Comet.Subscribe
     AUTH = 1;
-    // JoinRoom is sent on uplink to join the specified room
+    // JoinRoom is sent on uplink to join the specified room. JOIN can be sent together with AUTH,
+    // which means connect to comet and join the specified room immediately. A client follows
+    // only one room at a time. If a client is already in a room, JOIN another room implies
+    // quitting the last room where the client stays.
     JOIN = 2;
     // ServerPush is sent on downlink to push event to client
     PUSH = 3;

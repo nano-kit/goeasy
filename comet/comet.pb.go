@@ -27,7 +27,10 @@ const (
 	MsgType_HB MsgType = 0
 	// Auth is sent on uplink as the first message for Comet.Subscribe
 	MsgType_AUTH MsgType = 1
-	// JoinRoom is sent on uplink to join the specified room
+	// JoinRoom is sent on uplink to join the specified room. JOIN can be sent together with AUTH,
+	// which means connect to comet and join the specified room immediately. A client follows
+	// only one room at a time. If a client is already in a room, JOIN another room implies
+	// quitting the last room where the client stays.
 	MsgType_JOIN MsgType = 2
 	// ServerPush is sent on downlink to push event to client
 	MsgType_PUSH MsgType = 3
