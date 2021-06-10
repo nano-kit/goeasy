@@ -12,7 +12,7 @@ import (
 	"github.com/nano-kit/goeasy/comet"
 	"github.com/nano-kit/goeasy/gate"
 	"github.com/nano-kit/goeasy/internal/reexec"
-	"github.com/nano-kit/goeasy/servers/imchat"
+	"github.com/nano-kit/goeasy/servers/liveroom"
 )
 
 type serverType int
@@ -27,7 +27,7 @@ const (
 	stSupervisor serverType = iota
 	stGate
 	stComet
-	stIMChat
+	stLiveRoom
 )
 
 var (
@@ -48,10 +48,10 @@ var (
 			serverType: stComet,
 		},
 		{
-			server: &imchat.Server{
+			server: &liveroom.Server{
 				Namespace: namespace,
 			},
-			serverType: stIMChat,
+			serverType: stLiveRoom,
 		},
 	}
 )

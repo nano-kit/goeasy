@@ -1,4 +1,4 @@
-package imchat
+package liveroom
 
 import (
 	"github.com/micro/go-micro/v2"
@@ -6,7 +6,7 @@ import (
 )
 
 const (
-	ServiceName = "imchat"
+	ServiceName = "liveroom"
 )
 
 type Server struct {

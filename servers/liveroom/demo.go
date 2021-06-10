@@ -1,4 +1,4 @@
-package imchat
+package liveroom
 
 import (
 	context "context"

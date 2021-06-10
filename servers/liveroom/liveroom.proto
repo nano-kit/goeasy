@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package imchat;
+package liveroom;
 
 service Demo {
     rpc Hello(HelloReq) returns (HelloRes);
