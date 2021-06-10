@@ -2,12 +2,12 @@ package auth
 
 import (
 	"encoding/base64"
+	"fmt"
 	"os"
 	"strings"
 
 	"github.com/dgrijalva/jwt-go"
 	microauth "github.com/micro/go-micro/v2/auth"
-	"github.com/micro/go-micro/v2/logger"
 )
 
 // authClaims to be encoded in the JWT
@@ -36,11 +36,10 @@ func AccountToToken(acc *microauth.Account) string {
 }
 
 // AccountFromToken restore account from the access JWT token
-func AccountFromToken(token string) (*microauth.Account, bool) {
+func AccountFromToken(token string) (*microauth.Account, error) {
 	// check token format
 	if len(strings.Split(token, ".")) != 3 {
-		logger.Infof("not a jwt token: %v", token)
-		return nil, false
+		return nil, fmt.Errorf("not a jwt token: %v", token)
 	}
 
 	// get the public key from env
@@ -50,13 +49,11 @@ func AccountFromToken(token string) (*microauth.Account, bool) {
 		// try to decode JWT without verify signature
 		res, _, err := new(jwt.Parser).ParseUnverified(token, &authClaims{})
 		if err != nil {
-			logger.Infof("can not parse jwt: %v", err)
-			return nil, false
+			return nil, fmt.Errorf("can not parse jwt: %v", err)
 		}
 		claims, ok := res.Claims.(*authClaims)
 		if !ok {
-			logger.Infof("jwt claims type is incorrect")
-			return nil, false
+			return nil, fmt.Errorf("jwt claims type is incorrect")
 		}
 		return &microauth.Account{
 			ID:       claims.Subject,
@@ -64,14 +61,13 @@ func AccountFromToken(token string) (*microauth.Account, bool) {
 			Type:     claims.Type,
 			Scopes:   claims.Scopes,
 			Metadata: claims.Metadata,
-		}, true
+		}, nil
 	}
 
 	// decode the public key
 	pub, err := base64.StdEncoding.DecodeString(key)
 	if err != nil {
-		logger.Infof("env MICRO_AUTH_PUBLIC_KEY is incorrect: %v", err)
-		return nil, false
+		return nil, fmt.Errorf("env MICRO_AUTH_PUBLIC_KEY is incorrect: %v", err)
 	}
 
 	// parse the public key
@@ -79,19 +75,16 @@ func AccountFromToken(token string) (*microauth.Account, bool) {
 		return jwt.ParseRSAPublicKeyFromPEM(pub)
 	})
 	if err != nil {
-		logger.Infof("parse jwt: %v", err)
-		return nil, false
+		return nil, fmt.Errorf("parse jwt: %v", err)
 	}
 
 	// validate the token
 	if !res.Valid {
-		logger.Info("invalid token")
-		return nil, false
+		return nil, fmt.Errorf("invalid token")
 	}
 	claims, ok := res.Claims.(*authClaims)
 	if !ok {
-		logger.Info("can not type assert to authClaims")
-		return nil, false
+		return nil, fmt.Errorf("can not type assert to authClaims")
 	}
 
 	// return the token
@@ -101,5 +94,5 @@ func AccountFromToken(token string) (*microauth.Account, bool) {
 		Type:     claims.Type,
 		Scopes:   claims.Scopes,
 		Metadata: claims.Metadata,
-	}, true
+	}, nil
 }

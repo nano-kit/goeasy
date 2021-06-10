@@ -54,7 +54,7 @@ func main() {
 	}
 
 	// first message must be auth
-	acc := &auth.Account{ID: *uid}
+	acc := &auth.Account{ID: *uid, Issuer: "io.goeasy"}
 	token := iauth.AccountToToken(acc)
 	uplink := &comet.Uplink{
 		T: comet.MsgType_AUTH,

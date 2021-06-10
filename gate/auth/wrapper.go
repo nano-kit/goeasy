@@ -22,7 +22,7 @@ func Wrapper(r resolver.Resolver, nr *namespace.Resolver) server.Wrapper {
 			handler:    h,
 			resolver:   r,
 			nsResolver: nr,
-			auth:       auth.DefaultAuth,
+			auth:       &jwt{},
 		}
 	}
 }
@@ -68,7 +68,7 @@ func (a authWrapper) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	}
 
 	// Ensure the accounts issuer matches the namespace being requested
-	if acc != nil && len(acc.Issuer) > 0 && acc.Issuer != ns {
+	if acc != nil && acc.Issuer != ns {
 		http.Error(w, "Account was not issued by "+ns, http.StatusForbidden)
 		return
 	}

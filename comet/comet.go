@@ -19,14 +19,16 @@ import (
 const heartbeatDuration = 1 * time.Minute
 
 type Comet struct {
-	g  *pubsub.Group
-	rm *rmgr.Bucket
+	namespace string
+	g         *pubsub.Group
+	rm        *rmgr.Bucket
 }
 
-func NewComet() *Comet {
+func NewComet(namespace string) *Comet {
 	return &Comet{
-		g:  pubsub.New(),
-		rm: rmgr.NewBucket(),
+		namespace: namespace,
+		g:         pubsub.New(),
+		rm:        rmgr.NewBucket(),
 	}
 }
 
@@ -66,10 +68,16 @@ func (c *Comet) Subscribe(ctx context.Context, stream Comet_SubscribeStream) err
 	if req.T != MsgType_AUTH {
 		return errs.BadRequest("incorrect-protocol", "expect message type AUTH but got %v: %v", req.T, token)
 	}
-	account, ok := iauth.AccountFromToken(token)
-	if !ok {
-		return errs.BadRequest("unidentified-subscriber", "auth token should be JWT: %v", token)
+	account, err := iauth.AccountFromToken(token)
+	if err != nil {
+		return errs.BadRequest("unidentified-subscriber", "can not extract account from auth token: %v", err)
 	}
+
+	// Ensure the accounts issuer matches the namespace being requested
+	if account.Issuer != c.namespace {
+		return errs.BadRequest("unidentified-subscriber", "Account was not issued by %v", c.namespace)
+	}
+
 	md, _ := metadata.FromContext(ctx)
 	logger.Infof("subscriber %q enter with meta data: %v", account.ID, md)
 
