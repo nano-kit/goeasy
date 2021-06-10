@@ -15,23 +15,16 @@ import (
 	"github.com/nano-kit/goeasy/servers/liveroom"
 )
 
-type serverType int
+type serverName string
 type serverRecord struct {
 	server
-	serverType
 	cmd *exec.Cmd
 }
 
 const namespace = "io.goeasy"
-const (
-	stSupervisor serverType = iota
-	stGate
-	stComet
-	stLiveRoom
-)
 
 var (
-	runAs serverType = stSupervisor
+	runAs serverName
 
 	servers = []serverRecord{
 		{
@@ -39,42 +32,39 @@ var (
 				Address:   ":8080",
 				Namespace: namespace,
 			},
-			serverType: stGate,
 		},
 		{
 			server: &comet.Server{
 				Namespace: namespace,
 			},
-			serverType: stComet,
 		},
 		{
 			server: &liveroom.Server{
 				Namespace: namespace,
 			},
-			serverType: stLiveRoom,
 		},
 	}
 )
 
 func init() {
 	for _, x := range servers {
-		serverType := x.serverType
-		reexec.Register(x.Name(), func() { runAs = serverType })
+		s := x.Name()
+		reexec.Register(s, func() { runAs = serverName(s) })
 	}
 	reexec.Init()
 }
 
-func findServerRecord(st serverType) server {
+func findServerRecord(s serverName) server {
 	for _, x := range servers {
-		if x.serverType == st {
+		if x.Name() == string(s) {
 			return x.server
 		}
 	}
-	panic(fmt.Sprintf("unknown server type: %v", st))
+	panic(fmt.Sprintf("unknown server name: %v", s))
 }
 
 func main() {
-	if runAs != stSupervisor {
+	if runAs != "" {
 		findServerRecord(runAs).Run()
 		return
 	}
