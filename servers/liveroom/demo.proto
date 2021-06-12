@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package liveroom;
+
+service Demo {
+    rpc Hello(HelloReq) returns (HelloRes);
+}
+
+message HelloReq {
+    string say = 1;
+}
+
+message HelloRes {
+    string ack = 1;
+}

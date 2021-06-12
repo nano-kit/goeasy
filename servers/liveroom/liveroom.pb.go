@@ -20,87 +20,406 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.ProtoPackageIsVersion3 // please upgrade the proto package
 
-type HelloReq struct {
-	Say                  string   `protobuf:"bytes,1,opt,name=say,proto3" json:"say,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
+type RoomMessage_Type int32
+
+const (
+	RoomMessage_UNSPECIFIED RoomMessage_Type = 0
+	RoomMessage_ENTER_ROOM  RoomMessage_Type = 1
+	RoomMessage_LEAVE_ROOM  RoomMessage_Type = 2
+	RoomMessage_PLAIN_TEXT  RoomMessage_Type = 3
+)
+
+var RoomMessage_Type_name = map[int32]string{
+	0: "UNSPECIFIED",
+	1: "ENTER_ROOM",
+	2: "LEAVE_ROOM",
+	3: "PLAIN_TEXT",
 }
 
-func (m *HelloReq) Reset()         { *m = HelloReq{} }
-func (m *HelloReq) String() string { return proto.CompactTextString(m) }
-func (*HelloReq) ProtoMessage()    {}
-func (*HelloReq) Descriptor() ([]byte, []int) {
+var RoomMessage_Type_value = map[string]int32{
+	"UNSPECIFIED": 0,
+	"ENTER_ROOM":  1,
+	"LEAVE_ROOM":  2,
+	"PLAIN_TEXT":  3,
+}
+
+func (x RoomMessage_Type) String() string {
+	return proto.EnumName(RoomMessage_Type_name, int32(x))
+}
+
+func (RoomMessage_Type) EnumDescriptor() ([]byte, []int) {
+	return fileDescriptor_b2c9dc16fcaa0b3d, []int{4, 0}
+}
+
+type SendReq struct {
+	Room                 string       `protobuf:"bytes,1,opt,name=room,proto3" json:"room,omitempty"`
+	Msg                  *RoomMessage `protobuf:"bytes,2,opt,name=msg,proto3" json:"msg,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}     `json:"-"`
+	XXX_unrecognized     []byte       `json:"-"`
+	XXX_sizecache        int32        `json:"-"`
+}
+
+func (m *SendReq) Reset()         { *m = SendReq{} }
+func (m *SendReq) String() string { return proto.CompactTextString(m) }
+func (*SendReq) ProtoMessage()    {}
+func (*SendReq) Descriptor() ([]byte, []int) {
 	return fileDescriptor_b2c9dc16fcaa0b3d, []int{0}
 }
 
-func (m *HelloReq) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_HelloReq.Unmarshal(m, b)
+func (m *SendReq) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_SendReq.Unmarshal(m, b)
 }
-func (m *HelloReq) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_HelloReq.Marshal(b, m, deterministic)
+func (m *SendReq) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_SendReq.Marshal(b, m, deterministic)
 }
-func (m *HelloReq) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_HelloReq.Merge(m, src)
+func (m *SendReq) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_SendReq.Merge(m, src)
 }
-func (m *HelloReq) XXX_Size() int {
-	return xxx_messageInfo_HelloReq.Size(m)
+func (m *SendReq) XXX_Size() int {
+	return xxx_messageInfo_SendReq.Size(m)
 }
-func (m *HelloReq) XXX_DiscardUnknown() {
-	xxx_messageInfo_HelloReq.DiscardUnknown(m)
+func (m *SendReq) XXX_DiscardUnknown() {
+	xxx_messageInfo_SendReq.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_HelloReq proto.InternalMessageInfo
+var xxx_messageInfo_SendReq proto.InternalMessageInfo
 
-func (m *HelloReq) GetSay() string {
+func (m *SendReq) GetRoom() string {
 	if m != nil {
-		return m.Say
+		return m.Room
 	}
 	return ""
 }
 
-type HelloRes struct {
-	Ack                  string   `protobuf:"bytes,1,opt,name=ack,proto3" json:"ack,omitempty"`
+func (m *SendReq) GetMsg() *RoomMessage {
+	if m != nil {
+		return m.Msg
+	}
+	return nil
+}
+
+type SendRes struct {
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *HelloRes) Reset()         { *m = HelloRes{} }
-func (m *HelloRes) String() string { return proto.CompactTextString(m) }
-func (*HelloRes) ProtoMessage()    {}
-func (*HelloRes) Descriptor() ([]byte, []int) {
+func (m *SendRes) Reset()         { *m = SendRes{} }
+func (m *SendRes) String() string { return proto.CompactTextString(m) }
+func (*SendRes) ProtoMessage()    {}
+func (*SendRes) Descriptor() ([]byte, []int) {
 	return fileDescriptor_b2c9dc16fcaa0b3d, []int{1}
 }
 
-func (m *HelloRes) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_HelloRes.Unmarshal(m, b)
+func (m *SendRes) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_SendRes.Unmarshal(m, b)
 }
-func (m *HelloRes) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_HelloRes.Marshal(b, m, deterministic)
+func (m *SendRes) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_SendRes.Marshal(b, m, deterministic)
 }
-func (m *HelloRes) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_HelloRes.Merge(m, src)
+func (m *SendRes) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_SendRes.Merge(m, src)
 }
-func (m *HelloRes) XXX_Size() int {
-	return xxx_messageInfo_HelloRes.Size(m)
+func (m *SendRes) XXX_Size() int {
+	return xxx_messageInfo_SendRes.Size(m)
 }
-func (m *HelloRes) XXX_DiscardUnknown() {
-	xxx_messageInfo_HelloRes.DiscardUnknown(m)
+func (m *SendRes) XXX_DiscardUnknown() {
+	xxx_messageInfo_SendRes.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_HelloRes proto.InternalMessageInfo
+var xxx_messageInfo_SendRes proto.InternalMessageInfo
 
-func (m *HelloRes) GetAck() string {
+type RecvReq struct {
+	Room string `protobuf:"bytes,1,opt,name=room,proto3" json:"room,omitempty"`
+	// 客户端记住的已经收取到的最后一条消息的序列号
+	KnownMsgSeq          uint64   `protobuf:"varint,2,opt,name=known_msg_seq,json=knownMsgSeq,proto3" json:"known_msg_seq,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *RecvReq) Reset()         { *m = RecvReq{} }
+func (m *RecvReq) String() string { return proto.CompactTextString(m) }
+func (*RecvReq) ProtoMessage()    {}
+func (*RecvReq) Descriptor() ([]byte, []int) {
+	return fileDescriptor_b2c9dc16fcaa0b3d, []int{2}
+}
+
+func (m *RecvReq) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_RecvReq.Unmarshal(m, b)
+}
+func (m *RecvReq) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_RecvReq.Marshal(b, m, deterministic)
+}
+func (m *RecvReq) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_RecvReq.Merge(m, src)
+}
+func (m *RecvReq) XXX_Size() int {
+	return xxx_messageInfo_RecvReq.Size(m)
+}
+func (m *RecvReq) XXX_DiscardUnknown() {
+	xxx_messageInfo_RecvReq.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_RecvReq proto.InternalMessageInfo
+
+func (m *RecvReq) GetRoom() string {
 	if m != nil {
-		return m.Ack
+		return m.Room
+	}
+	return ""
+}
+
+func (m *RecvReq) GetKnownMsgSeq() uint64 {
+	if m != nil {
+		return m.KnownMsgSeq
+	}
+	return 0
+}
+
+type RecvRes struct {
+	// 本次收取的所有未读消息，按seq排序，最小的seq必须比known_msg_seq大
+	Msgs                 []*RoomMessage `protobuf:"bytes,1,rep,name=msgs,proto3" json:"msgs,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}       `json:"-"`
+	XXX_unrecognized     []byte         `json:"-"`
+	XXX_sizecache        int32          `json:"-"`
+}
+
+func (m *RecvRes) Reset()         { *m = RecvRes{} }
+func (m *RecvRes) String() string { return proto.CompactTextString(m) }
+func (*RecvRes) ProtoMessage()    {}
+func (*RecvRes) Descriptor() ([]byte, []int) {
+	return fileDescriptor_b2c9dc16fcaa0b3d, []int{3}
+}
+
+func (m *RecvRes) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_RecvRes.Unmarshal(m, b)
+}
+func (m *RecvRes) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_RecvRes.Marshal(b, m, deterministic)
+}
+func (m *RecvRes) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_RecvRes.Merge(m, src)
+}
+func (m *RecvRes) XXX_Size() int {
+	return xxx_messageInfo_RecvRes.Size(m)
+}
+func (m *RecvRes) XXX_DiscardUnknown() {
+	xxx_messageInfo_RecvRes.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_RecvRes proto.InternalMessageInfo
+
+func (m *RecvRes) GetMsgs() []*RoomMessage {
+	if m != nil {
+		return m.Msgs
+	}
+	return nil
+}
+
+type RoomMessage struct {
+	// 聊天室里的每条消息都有唯一的seq，新消息的seq总是更大
+	Seq uint64 `protobuf:"varint,1,opt,name=seq,proto3" json:"seq,omitempty"`
+	// 消息类型
+	Typ RoomMessage_Type `protobuf:"varint,2,opt,name=typ,proto3,enum=liveroom.RoomMessage_Type" json:"typ,omitempty"`
+	// 谁发出的消息
+	Uid string `protobuf:"bytes,3,opt,name=uid,proto3" json:"uid,omitempty"`
+	// 何时发出的消息
+	SendAt int64 `protobuf:"varint,4,opt,name=send_at,json=sendAt,proto3" json:"send_at,omitempty"`
+	// 具体消息对象，与消息类型对应
+	EnterRoom            *MsgEnterRoom `protobuf:"bytes,5,opt,name=enter_room,json=enterRoom,proto3" json:"enter_room,omitempty"`
+	LeaveRoom            *MsgLeaveRoom `protobuf:"bytes,6,opt,name=leave_room,json=leaveRoom,proto3" json:"leave_room,omitempty"`
+	PlainText            *MsgPlainText `protobuf:"bytes,7,opt,name=plain_text,json=plainText,proto3" json:"plain_text,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}      `json:"-"`
+	XXX_unrecognized     []byte        `json:"-"`
+	XXX_sizecache        int32         `json:"-"`
+}
+
+func (m *RoomMessage) Reset()         { *m = RoomMessage{} }
+func (m *RoomMessage) String() string { return proto.CompactTextString(m) }
+func (*RoomMessage) ProtoMessage()    {}
+func (*RoomMessage) Descriptor() ([]byte, []int) {
+	return fileDescriptor_b2c9dc16fcaa0b3d, []int{4}
+}
+
+func (m *RoomMessage) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_RoomMessage.Unmarshal(m, b)
+}
+func (m *RoomMessage) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_RoomMessage.Marshal(b, m, deterministic)
+}
+func (m *RoomMessage) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_RoomMessage.Merge(m, src)
+}
+func (m *RoomMessage) XXX_Size() int {
+	return xxx_messageInfo_RoomMessage.Size(m)
+}
+func (m *RoomMessage) XXX_DiscardUnknown() {
+	xxx_messageInfo_RoomMessage.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_RoomMessage proto.InternalMessageInfo
+
+func (m *RoomMessage) GetSeq() uint64 {
+	if m != nil {
+		return m.Seq
+	}
+	return 0
+}
+
+func (m *RoomMessage) GetTyp() RoomMessage_Type {
+	if m != nil {
+		return m.Typ
+	}
+	return RoomMessage_UNSPECIFIED
+}
+
+func (m *RoomMessage) GetUid() string {
+	if m != nil {
+		return m.Uid
+	}
+	return ""
+}
+
+func (m *RoomMessage) GetSendAt() int64 {
+	if m != nil {
+		return m.SendAt
+	}
+	return 0
+}
+
+func (m *RoomMessage) GetEnterRoom() *MsgEnterRoom {
+	if m != nil {
+		return m.EnterRoom
+	}
+	return nil
+}
+
+func (m *RoomMessage) GetLeaveRoom() *MsgLeaveRoom {
+	if m != nil {
+		return m.LeaveRoom
+	}
+	return nil
+}
+
+func (m *RoomMessage) GetPlainText() *MsgPlainText {
+	if m != nil {
+		return m.PlainText
+	}
+	return nil
+}
+
+type MsgEnterRoom struct {
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *MsgEnterRoom) Reset()         { *m = MsgEnterRoom{} }
+func (m *MsgEnterRoom) String() string { return proto.CompactTextString(m) }
+func (*MsgEnterRoom) ProtoMessage()    {}
+func (*MsgEnterRoom) Descriptor() ([]byte, []int) {
+	return fileDescriptor_b2c9dc16fcaa0b3d, []int{5}
+}
+
+func (m *MsgEnterRoom) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_MsgEnterRoom.Unmarshal(m, b)
+}
+func (m *MsgEnterRoom) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_MsgEnterRoom.Marshal(b, m, deterministic)
+}
+func (m *MsgEnterRoom) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgEnterRoom.Merge(m, src)
+}
+func (m *MsgEnterRoom) XXX_Size() int {
+	return xxx_messageInfo_MsgEnterRoom.Size(m)
+}
+func (m *MsgEnterRoom) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgEnterRoom.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgEnterRoom proto.InternalMessageInfo
+
+type MsgLeaveRoom struct {
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *MsgLeaveRoom) Reset()         { *m = MsgLeaveRoom{} }
+func (m *MsgLeaveRoom) String() string { return proto.CompactTextString(m) }
+func (*MsgLeaveRoom) ProtoMessage()    {}
+func (*MsgLeaveRoom) Descriptor() ([]byte, []int) {
+	return fileDescriptor_b2c9dc16fcaa0b3d, []int{6}
+}
+
+func (m *MsgLeaveRoom) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_MsgLeaveRoom.Unmarshal(m, b)
+}
+func (m *MsgLeaveRoom) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_MsgLeaveRoom.Marshal(b, m, deterministic)
+}
+func (m *MsgLeaveRoom) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgLeaveRoom.Merge(m, src)
+}
+func (m *MsgLeaveRoom) XXX_Size() int {
+	return xxx_messageInfo_MsgLeaveRoom.Size(m)
+}
+func (m *MsgLeaveRoom) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgLeaveRoom.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgLeaveRoom proto.InternalMessageInfo
+
+type MsgPlainText struct {
+	Text                 string   `protobuf:"bytes,1,opt,name=text,proto3" json:"text,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *MsgPlainText) Reset()         { *m = MsgPlainText{} }
+func (m *MsgPlainText) String() string { return proto.CompactTextString(m) }
+func (*MsgPlainText) ProtoMessage()    {}
+func (*MsgPlainText) Descriptor() ([]byte, []int) {
+	return fileDescriptor_b2c9dc16fcaa0b3d, []int{7}
+}
+
+func (m *MsgPlainText) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_MsgPlainText.Unmarshal(m, b)
+}
+func (m *MsgPlainText) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_MsgPlainText.Marshal(b, m, deterministic)
+}
+func (m *MsgPlainText) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgPlainText.Merge(m, src)
+}
+func (m *MsgPlainText) XXX_Size() int {
+	return xxx_messageInfo_MsgPlainText.Size(m)
+}
+func (m *MsgPlainText) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgPlainText.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgPlainText proto.InternalMessageInfo
+
+func (m *MsgPlainText) GetText() string {
+	if m != nil {
+		return m.Text
 	}
 	return ""
 }
 
 func init() {
-	proto.RegisterType((*HelloReq)(nil), "liveroom.HelloReq")
-	proto.RegisterType((*HelloRes)(nil), "liveroom.HelloRes")
+	proto.RegisterEnum("liveroom.RoomMessage_Type", RoomMessage_Type_name, RoomMessage_Type_value)
+	proto.RegisterType((*SendReq)(nil), "liveroom.SendReq")
+	proto.RegisterType((*SendRes)(nil), "liveroom.SendRes")
+	proto.RegisterType((*RecvReq)(nil), "liveroom.RecvReq")
+	proto.RegisterType((*RecvRes)(nil), "liveroom.RecvRes")
+	proto.RegisterType((*RoomMessage)(nil), "liveroom.RoomMessage")
+	proto.RegisterType((*MsgEnterRoom)(nil), "liveroom.MsgEnterRoom")
+	proto.RegisterType((*MsgLeaveRoom)(nil), "liveroom.MsgLeaveRoom")
+	proto.RegisterType((*MsgPlainText)(nil), "liveroom.MsgPlainText")
 }
 
 func init() {
@@ -108,13 +427,32 @@ func init() {
 }
 
 var fileDescriptor_b2c9dc16fcaa0b3d = []byte{
-	// 115 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0xe2, 0xcb, 0xc9, 0x2c, 0x4b,
-	0x2d, 0xca, 0xcf, 0xcf, 0xd5, 0x2b, 0x28, 0xca, 0x2f, 0xc9, 0x17, 0xe2, 0x80, 0xf1, 0x95, 0x64,
-	0xb8, 0x38, 0x3c, 0x52, 0x73, 0x72, 0xf2, 0x83, 0x52, 0x0b, 0x85, 0x04, 0xb8, 0x98, 0x8b, 0x13,
-	0x2b, 0x25, 0x18, 0x15, 0x18, 0x35, 0x38, 0x83, 0x40, 0x4c, 0x24, 0xd9, 0x62, 0x90, 0x6c, 0x62,
-	0x72, 0x36, 0x4c, 0x36, 0x31, 0x39, 0xdb, 0xc8, 0x9c, 0x8b, 0xc5, 0x25, 0x35, 0x37, 0x5f, 0x48,
-	0x9f, 0x8b, 0x15, 0xac, 0x4a, 0x48, 0x48, 0x0f, 0x6e, 0x0f, 0xcc, 0x50, 0x29, 0x4c, 0xb1, 0xe2,
-	0x24, 0x36, 0xb0, 0x2b, 0x8c, 0x01, 0x01, 0x00, 0x00, 0xff, 0xff, 0x04, 0x7c, 0xf0, 0x6d, 0x97,
-	0x00, 0x00, 0x00,
+	// 418 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x74, 0x52, 0x5d, 0x8f, 0xd2, 0x40,
+	0x14, 0xb5, 0xb4, 0xc2, 0x72, 0x51, 0xac, 0x93, 0xa8, 0x0d, 0x4f, 0xcd, 0xbc, 0x88, 0xc9, 0x86,
+	0x07, 0xd4, 0x1f, 0xd0, 0xe8, 0xac, 0x21, 0x69, 0x59, 0x32, 0x54, 0xe3, 0x5b, 0x53, 0xe5, 0xda,
+	0x34, 0xf6, 0x0b, 0x66, 0xc4, 0xdd, 0x3f, 0xec, 0xef, 0x30, 0x77, 0x68, 0x59, 0x92, 0x85, 0xb7,
+	0x73, 0xee, 0xbd, 0xe7, 0xcc, 0xbd, 0x93, 0x03, 0xe3, 0x22, 0xdf, 0xe3, 0xae, 0xae, 0xcb, 0x59,
+	0xb3, 0xab, 0x75, 0xcd, 0xae, 0x3a, 0xce, 0x6f, 0x60, 0xb0, 0xc6, 0x6a, 0x23, 0x71, 0xcb, 0x18,
+	0x38, 0x54, 0xf2, 0x2c, 0xdf, 0x9a, 0x0e, 0xa5, 0xc1, 0xec, 0x2d, 0xd8, 0xa5, 0xca, 0xbc, 0x9e,
+	0x6f, 0x4d, 0x47, 0xf3, 0x57, 0xb3, 0xa3, 0x8d, 0xac, 0xeb, 0x32, 0x42, 0xa5, 0xd2, 0x0c, 0x25,
+	0x4d, 0xf0, 0x61, 0xe7, 0xa3, 0x78, 0x00, 0x03, 0x89, 0x3f, 0xf7, 0x97, 0x2c, 0x39, 0x3c, 0xff,
+	0x5d, 0xd5, 0x7f, 0xab, 0xa4, 0x54, 0x59, 0xa2, 0x70, 0x6b, 0xcc, 0x1d, 0x39, 0x32, 0xc5, 0x48,
+	0x65, 0x6b, 0xdc, 0xf2, 0x0f, 0x9d, 0x85, 0x62, 0xef, 0xc0, 0x29, 0x55, 0xa6, 0x3c, 0xcb, 0xb7,
+	0x2f, 0xaf, 0x60, 0x46, 0xf8, 0xbf, 0x1e, 0x8c, 0x4e, 0xaa, 0xcc, 0x05, 0x9b, 0xfc, 0x2d, 0xe3,
+	0x4f, 0x90, 0x5d, 0x83, 0xad, 0xef, 0x1b, 0xf3, 0xe2, 0x78, 0x3e, 0x39, 0xeb, 0x35, 0x8b, 0xef,
+	0x1b, 0x94, 0x34, 0x46, 0xfa, 0x3f, 0xf9, 0xc6, 0xb3, 0xcd, 0xf2, 0x04, 0xd9, 0x1b, 0x18, 0x28,
+	0xac, 0x36, 0x49, 0xaa, 0x3d, 0xc7, 0xb7, 0xa6, 0xb6, 0xec, 0x13, 0x0d, 0x34, 0xfb, 0x08, 0x80,
+	0x95, 0xc6, 0x5d, 0x62, 0xce, 0x7d, 0x6a, 0xbe, 0xeb, 0xf5, 0x83, 0x7f, 0xa4, 0x32, 0x41, 0x6d,
+	0x7a, 0x47, 0x0e, 0xb1, 0x83, 0x24, 0x2b, 0x30, 0xdd, 0xe3, 0x41, 0xd6, 0x3f, 0x23, 0x0b, 0xa9,
+	0x7d, 0x90, 0x15, 0x1d, 0x24, 0x59, 0x53, 0xa4, 0x79, 0x95, 0x68, 0xbc, 0xd3, 0xde, 0xe0, 0x8c,
+	0x6c, 0x45, 0xed, 0x18, 0xef, 0xb4, 0x1c, 0x36, 0x1d, 0xe4, 0x5f, 0xc0, 0xa1, 0xe3, 0xd8, 0x0b,
+	0x18, 0x7d, 0x5d, 0xae, 0x57, 0xe2, 0xd3, 0xe2, 0x66, 0x21, 0x3e, 0xbb, 0x4f, 0xd8, 0x18, 0x40,
+	0x2c, 0x63, 0x21, 0x13, 0x79, 0x7b, 0x1b, 0xb9, 0x16, 0xf1, 0x50, 0x04, 0xdf, 0xc4, 0x81, 0xf7,
+	0x88, 0xaf, 0xc2, 0x60, 0xb1, 0x4c, 0x62, 0xf1, 0x3d, 0x76, 0x6d, 0x3e, 0x86, 0x67, 0xa7, 0x17,
+	0xb5, 0xfc, 0xb8, 0x2a, 0xe7, 0x86, 0x1f, 0x77, 0xa0, 0x18, 0x98, 0x4d, 0xdb, 0x18, 0x10, 0x9e,
+	0xff, 0x82, 0xab, 0x30, 0x6f, 0xef, 0xb9, 0x06, 0x87, 0xc2, 0xc3, 0x5e, 0x3e, 0xdc, 0xd0, 0x86,
+	0x72, 0xf2, 0xa8, 0xa4, 0x68, 0x9a, 0xc2, 0x71, 0x3a, 0xdd, 0xe6, 0x6d, 0xf2, 0xa8, 0xa4, 0x7e,
+	0xf4, 0x4d, 0xe2, 0xdf, 0xff, 0x0f, 0x00, 0x00, 0xff, 0xff, 0xf9, 0x6f, 0x07, 0x7b, 0x03, 0x03,
+	0x00, 0x00,
 }

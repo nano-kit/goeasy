@@ -2,14 +2,62 @@ syntax = "proto3";
 
 package liveroom;
 
-service Demo {
-    rpc Hello(HelloReq) returns (HelloRes);
+// 聊天室服务
+service LiveRoom {
+    // 在聊天室里，发送消息
+    rpc Send(SendReq) returns (SendRes);
+    // 收取聊天室里的未读消息
+    rpc Recv(RecvReq) returns (RecvRes);
 }
 
-message HelloReq {
-    string say = 1;
+message SendReq {
+    string room = 1;
+    RoomMessage msg = 2;
 }
 
-message HelloRes {
-    string ack = 1;
+message SendRes {
+}
+
+message RecvReq {
+    string room = 1;
+    // 客户端记住的已经收取到的最后一条消息的序列号
+    uint64 known_msg_seq = 2;
+}
+
+message RecvRes {
+    // 本次收取的所有未读消息，按seq排序，最小的seq必须比known_msg_seq大
+    repeated RoomMessage msgs = 1;
+}
+
+message RoomMessage {
+    enum Type {
+        UNSPECIFIED = 0;
+        ENTER_ROOM = 1;
+        LEAVE_ROOM = 2;
+        PLAIN_TEXT = 3;
+    }
+
+    // 聊天室里的每条消息都有唯一的seq，新消息的seq总是更大
+    uint64 seq = 1;
+    // 消息类型
+    Type typ = 2;
+    // 谁发出的消息
+    string uid = 3;
+    // 何时发出的消息
+    int64 send_at = 4;
+
+    // 具体消息对象，与消息类型对应
+    MsgEnterRoom enter_room = 5;
+    MsgLeaveRoom leave_room = 6;
+    MsgPlainText plain_text = 7;
+}
+
+message MsgEnterRoom {
+}
+
+message MsgLeaveRoom {
+}
+
+message MsgPlainText {
+    string text = 1;
 }
