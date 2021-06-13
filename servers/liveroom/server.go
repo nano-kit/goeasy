@@ -3,6 +3,7 @@ package liveroom
 import (
 	"github.com/micro/go-micro/v2"
 	log "github.com/micro/go-micro/v2/logger"
+	iconf "github.com/nano-kit/goeasy/internal/config"
 )
 
 const (
@@ -10,7 +11,15 @@ const (
 )
 
 type Server struct {
-	Namespace string
+	Namespace string `json:"namespace"`
+}
+
+func NewServer() *Server {
+	s := &Server{}
+	if err := iconf.LoadInitialConfigFromFile("serverinit.yaml", s); err != nil {
+		panic(err)
+	}
+	return s
 }
 
 func (s *Server) Name() string {

@@ -1,13 +1,14 @@
-package comet
+package impl
 
 import (
 	"github.com/micro/go-micro/v2"
 	log "github.com/micro/go-micro/v2/logger"
 	iconf "github.com/nano-kit/goeasy/internal/config"
+	seq "github.com/nano-kit/goeasy/servers/sequence"
 )
 
 const (
-	ServiceName = "comet"
+	ServiceName = "sequence"
 )
 
 type Server struct {
@@ -34,9 +35,7 @@ func (s *Server) Run() {
 	srvOpts = append(srvOpts, micro.Name(s.Name()))
 	service := micro.NewService(srvOpts...)
 
-	comet := NewComet(s.Namespace)
-	RegisterCometHandler(service.Server(), comet)
-	micro.RegisterSubscriber(s.Name(), service.Server(), comet.onEvent)
+	seq.RegisterSequenceHandler(service.Server(), new(Sequence))
 
 	// Run micro server
 	if err := service.Run(); err != nil {

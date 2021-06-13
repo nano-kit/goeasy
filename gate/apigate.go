@@ -13,6 +13,7 @@ import (
 	httpapi "github.com/micro/go-micro/v2/api/server/http"
 	log "github.com/micro/go-micro/v2/logger"
 	"github.com/nano-kit/goeasy/gate/auth"
+	iconf "github.com/nano-kit/goeasy/internal/config"
 	"github.com/nano-kit/goeasy/internal/handler"
 	"github.com/nano-kit/goeasy/internal/namespace"
 	"github.com/nano-kit/goeasy/internal/resolver/api"
@@ -24,8 +25,16 @@ const (
 )
 
 type Server struct {
-	Address   string
-	Namespace string
+	Address   string `json:"api_serving_address"`
+	Namespace string `json:"namespace"`
+}
+
+func NewServer() *Server {
+	s := &Server{}
+	if err := iconf.LoadInitialConfigFromFile("serverinit.yaml", s); err != nil {
+		panic(err)
+	}
+	return s
 }
 
 func (s *Server) Name() string {

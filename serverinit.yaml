@@ -1,0 +1,2 @@
+namespace: io.goeasy
+api_serving_address: :8080

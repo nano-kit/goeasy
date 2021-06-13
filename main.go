@@ -13,6 +13,7 @@ import (
 	"github.com/nano-kit/goeasy/gate"
 	"github.com/nano-kit/goeasy/internal/reexec"
 	"github.com/nano-kit/goeasy/servers/liveroom"
+	sequence "github.com/nano-kit/goeasy/servers/sequence/impl"
 )
 
 type serverName string
@@ -21,28 +22,14 @@ type serverRecord struct {
 	cmd *exec.Cmd
 }
 
-const namespace = "io.goeasy"
-
 var (
 	runAs serverName
 
 	servers = []serverRecord{
-		{
-			server: &gate.Server{
-				Address:   ":8080",
-				Namespace: namespace,
-			},
-		},
-		{
-			server: &comet.Server{
-				Namespace: namespace,
-			},
-		},
-		{
-			server: &liveroom.Server{
-				Namespace: namespace,
-			},
-		},
+		{server: gate.NewServer()},
+		{server: comet.NewServer()},
+		{server: sequence.NewServer()},
+		{server: liveroom.NewServer()},
 	}
 )
 
