@@ -1,6 +1,10 @@
 package config
 
 import (
+	"os"
+	"path/filepath"
+	"strings"
+
 	microconfig "github.com/micro/go-micro/v2/config"
 	"github.com/micro/go-micro/v2/config/source/file"
 )
@@ -11,6 +15,14 @@ import (
 // address, which are parameters that should be known before server starts
 // and can not be changed until server stops.
 func LoadInitialConfigFromFile(filePath string, v interface{}) error {
+	if !startsWithSlash(filePath) {
+		exeDir, err := executableDir()
+		if err != nil {
+			return err
+		}
+		filePath = filepath.Join(exeDir, filePath)
+	}
+
 	conf, err := microconfig.NewConfig(microconfig.WithSource(
 		file.NewSource(file.WithPath(filePath)),
 	))
@@ -19,4 +31,23 @@ func LoadInitialConfigFromFile(filePath string, v interface{}) error {
 	}
 
 	return conf.Scan(v)
+}
+
+func startsWithSlash(filePath string) bool {
+	if strings.HasPrefix(filePath, "/") {
+		return true
+	}
+	if filepath.VolumeName(filePath) != "" {
+		return true
+	}
+	return false
+}
+
+func executableDir() (string, error) {
+	exe, err := os.Executable()
+	if err != nil {
+		return exe, err
+	}
+	exeDir := filepath.Dir(exe)
+	return exeDir, nil
 }
