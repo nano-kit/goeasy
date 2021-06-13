@@ -1,18 +1,44 @@
-# Project Layout
+# Project Layout 项目目录结构
 
-## 定义
+## Terminology 定义
 
-*项目* 是产出为可执行文件的代码集合
+For clarity, this guide defines the following terms:
 
-*包* 是可以被项目引用的代码集合
+* *Project* : a file set which is built as an executable.
+* *Package* : a file set which can be imported by projects.
+* *Service* : a micro-service developed with Go-Micro framework.
+* *System* : is composed by multiple services to serve a business purpose.
+* *Repo* : git repository.
 
-*服务* 是基于 Go-Micro 框架开发的微服务
+为了清晰起见，在实施条例中定义了以下这些专有名词，
 
-*系统* 是用于达成某种商业用途的多个服务的集合
+* *项目* ：产出为可执行文件的代码集合
+* *包* ：可以被项目引用的代码集合
+* *服务* ：基于 Go-Micro 框架开发的微服务
+* *系统* ：用于达成某种商业用途的多个服务的集合
+* *仓库* ：git repository
 
-*仓库* 是 git repository
+## Guideline 实施
 
-## 实施
+1. This project is a Mono-Repo, it is not a package.
+2. A folder contains all the elements of a service, including
+    1. service interface, described by protobuf;
+    2. service implementations;
+    3. generate.go for code/doc generating;
+    4. doc for usage, manual, design and caveat.
+3. If a service can be used by other service
+    1. put service interface codes in the folder;
+    2. put service implementation in sub-folder such as `impl`.
+4. If a service can not be used by other service, put all the codes in the folder directly.
+5. Put critical services folder in the repo root.
+6. Put optional services folder in the folder `servers`.
+7. Critical services should not depend on optional services.
+8. Cyclic dependencies is not allowed between services.
+9. Repo `main.go` composes any services to produce an all-in-one executable.
+10. Feature Toggle is done by select service implementation and composition.
+11. Go toolchain is preferred, such as go generate, go build etc.
+
+---
 
 1. 这是一个 Monorepo 型的最终项目，而不是可以被引用的包
 2. 一个服务的所有资料只在一个目录下，常用的资料有
@@ -32,7 +58,7 @@
 10. 选取合适的服务实现，再进行组合，达成 Feature Toggle
 11. 尽量只用 Go 工具链，go generate; go build 等等
 
-## 参考
+## Reference 参考
 
 * [如何不 Review 每一行代码，同时保持代码不被写乱](https://mp.weixin.qq.com/s/UtBkJYpQHIvRQ_AQnzxxMw)
 * [Standard Go Project Layout](https://github.com/golang-standards/project-layout)
