@@ -13,7 +13,7 @@ The *comet* API is designed to be simple enough. The rules to keep the persisten
 - On receiving nothing for a long time, re-connect
 - On error, re-connect with reasonable backoff
 
-## API
+## Overview
 
 ENDPOINT (WebSocket)
     `/comet/subscribe`
@@ -47,6 +47,6 @@ RESPONSE (*server-pushed-event*)
     { "t":"PUSH", "push": { "evt": "" } }
 ```
 
-ATTRIBUTES
+## Details
 
-See comment in [comet.proto](comet.proto)
+See [comet.md](comet.md)

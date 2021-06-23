@@ -15,7 +15,7 @@ service Comet {
     rpc Publish(PublishReq) returns (PublishRes);
     // Broadcast an event to all the clients in a specific room on this comet instance.
     rpc Broadcast(BroadcastReq) returns (BroadcastRes);
-    // Dump all the clients' session on this comet instance.
+    // Dump all the clients' session on this comet instance. It is a debugging method.
     rpc DumpSession(DumpSessionReq) returns (DumpSessionRes);
 }
 
@@ -34,10 +34,13 @@ message PublishRes {
 }
 
 message BroadcastReq {
-    // room identity, default (empty) to do a world broadcast, which means all the clients on
-    // this comet instance are published with the event.
+    // The room identity, default (empty) to do a world broadcast, which means all the clients on
+    // this comet instance are published with the event. Otherwise, the broadcast is delivered to
+    // the clients within the room.
     string rid = 1;
-    // refer to PublishReq.evt
+    // The server-sent event goes through the downlink to the client.
+    // Its content is opaque, which means what is published here reaches client unmodified.
+    // Only the concrete business can explain this event.
     string evt = 2;
 }
 
@@ -48,18 +51,28 @@ message DumpSessionReq {
 }
 
 message DumpSessionRes {
+    // All the sessions in the world in this comet instance
     repeated Session world = 1;
+    // All the rooms in this comet instance
     repeated Room rooms = 2;
 }
 
+// Room is a (virtual) place where session gathers.
 message Room {
+    // The room identity
     string rid = 1;
+    // All the sessions in this room.
     repeated Session room = 2;
 }
 
+// Session is a user's session. It is created when a client subscribes to this comet, and
+// destroyed when the client disconnected.
 message Session {
+    // The unique user identity
     string uid = 1;
+    // The room identity
     string rid = 2;
+    // When is the session created
     string birth = 3;
 }
 
@@ -102,22 +115,24 @@ message Auth {
 }
 
 message JoinRoom {
-    // room identity, default (empty) to quit any room and stay only in the world.
+    // The room identity, default (empty) to quit any room and stay only in the world.
     string rid = 1;
 }
 
 message ServerPush {
-    // refer to PublishReq.evt
+    // The server-sent event goes through the downlink to the client.
+    // Its content is opaque, which means what is published reaches client unmodified.
+    // Only the concrete business can explain this event.
     string evt = 1;
 }
 
 // Event is the asynchronous message using Go-Micro's message broker interface.
 // refer to Comet.onEvent
 message Event {
-    // refer to PublishReq.uid
+    // The unique user identity
     string uid = 1;
-    // refer to BroadcastReq.rid
+    // The room identity
     string rid = 2;
-    // refer to PublishReq.evt
+    // The server-sent event goes through the downlink to the client.
     string evt = 3;
 }
