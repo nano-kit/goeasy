@@ -52,7 +52,7 @@ type CometService interface {
 	Publish(ctx context.Context, in *PublishReq, opts ...client.CallOption) (*PublishRes, error)
 	// Broadcast an event to all the clients in a specific room on this comet instance.
 	Broadcast(ctx context.Context, in *BroadcastReq, opts ...client.CallOption) (*BroadcastRes, error)
-	// Dump all the clients' session on this comet instance.
+	// Dump all the clients' session on this comet instance. It is a debugging method.
 	DumpSession(ctx context.Context, in *DumpSessionReq, opts ...client.CallOption) (*DumpSessionRes, error)
 }
 
@@ -162,7 +162,7 @@ type CometHandler interface {
 	Publish(context.Context, *PublishReq, *PublishRes) error
 	// Broadcast an event to all the clients in a specific room on this comet instance.
 	Broadcast(context.Context, *BroadcastReq, *BroadcastRes) error
-	// Dump all the clients' session on this comet instance.
+	// Dump all the clients' session on this comet instance. It is a debugging method.
 	DumpSession(context.Context, *DumpSessionReq, *DumpSessionRes) error
 }
 

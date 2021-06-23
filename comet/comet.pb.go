@@ -144,10 +144,13 @@ func (m *PublishRes) XXX_DiscardUnknown() {
 var xxx_messageInfo_PublishRes proto.InternalMessageInfo
 
 type BroadcastReq struct {
-	// room identity, default (empty) to do a world broadcast, which means all the clients on
-	// this comet instance are published with the event.
+	// The room identity, default (empty) to do a world broadcast, which means all the clients on
+	// this comet instance are published with the event. Otherwise, the broadcast is delivered to
+	// the clients within the room.
 	Rid string `protobuf:"bytes,1,opt,name=rid,proto3" json:"rid,omitempty"`
-	// refer to PublishReq.evt
+	// The server-sent event goes through the downlink to the client.
+	// Its content is opaque, which means what is published here reaches client unmodified.
+	// Only the concrete business can explain this event.
 	Evt                  string   `protobuf:"bytes,2,opt,name=evt,proto3" json:"evt,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -256,11 +259,13 @@ func (m *DumpSessionReq) XXX_DiscardUnknown() {
 var xxx_messageInfo_DumpSessionReq proto.InternalMessageInfo
 
 type DumpSessionRes struct {
-	World                []*Session `protobuf:"bytes,1,rep,name=world,proto3" json:"world,omitempty"`
-	Rooms                []*Room    `protobuf:"bytes,2,rep,name=rooms,proto3" json:"rooms,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}   `json:"-"`
-	XXX_unrecognized     []byte     `json:"-"`
-	XXX_sizecache        int32      `json:"-"`
+	// All the sessions in the world in this comet instance
+	World []*Session `protobuf:"bytes,1,rep,name=world,proto3" json:"world,omitempty"`
+	// All the rooms in this comet instance
+	Rooms                []*Room  `protobuf:"bytes,2,rep,name=rooms,proto3" json:"rooms,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
 }
 
 func (m *DumpSessionRes) Reset()         { *m = DumpSessionRes{} }
@@ -302,8 +307,11 @@ func (m *DumpSessionRes) GetRooms() []*Room {
 	return nil
 }
 
+// Room is a (virtual) place where session gathers.
 type Room struct {
-	Rid                  string     `protobuf:"bytes,1,opt,name=rid,proto3" json:"rid,omitempty"`
+	// The room identity
+	Rid string `protobuf:"bytes,1,opt,name=rid,proto3" json:"rid,omitempty"`
+	// All the sessions in this room.
 	Room                 []*Session `protobuf:"bytes,2,rep,name=room,proto3" json:"room,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}   `json:"-"`
 	XXX_unrecognized     []byte     `json:"-"`
@@ -349,9 +357,14 @@ func (m *Room) GetRoom() []*Session {
 	return nil
 }
 
+// Session is a user's session. It is created when a client subscribes to this comet, and
+// destroyed when the client disconnected.
 type Session struct {
-	Uid                  string   `protobuf:"bytes,1,opt,name=uid,proto3" json:"uid,omitempty"`
-	Rid                  string   `protobuf:"bytes,2,opt,name=rid,proto3" json:"rid,omitempty"`
+	// The unique user identity
+	Uid string `protobuf:"bytes,1,opt,name=uid,proto3" json:"uid,omitempty"`
+	// The room identity
+	Rid string `protobuf:"bytes,2,opt,name=rid,proto3" json:"rid,omitempty"`
+	// When is the session created
 	Birth                string   `protobuf:"bytes,3,opt,name=birth,proto3" json:"birth,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -596,7 +609,7 @@ func (m *Auth) GetToken() string {
 }
 
 type JoinRoom struct {
-	// room identity, default (empty) to quit any room and stay only in the world.
+	// The room identity, default (empty) to quit any room and stay only in the world.
 	Rid                  string   `protobuf:"bytes,1,opt,name=rid,proto3" json:"rid,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -636,7 +649,9 @@ func (m *JoinRoom) GetRid() string {
 }
 
 type ServerPush struct {
-	// refer to PublishReq.evt
+	// The server-sent event goes through the downlink to the client.
+	// Its content is opaque, which means what is published reaches client unmodified.
+	// Only the concrete business can explain this event.
 	Evt                  string   `protobuf:"bytes,1,opt,name=evt,proto3" json:"evt,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -678,11 +693,11 @@ func (m *ServerPush) GetEvt() string {
 // Event is the asynchronous message using Go-Micro's message broker interface.
 // refer to Comet.onEvent
 type Event struct {
-	// refer to PublishReq.uid
+	// The unique user identity
 	Uid string `protobuf:"bytes,1,opt,name=uid,proto3" json:"uid,omitempty"`
-	// refer to BroadcastReq.rid
+	// The room identity
 	Rid string `protobuf:"bytes,2,opt,name=rid,proto3" json:"rid,omitempty"`
-	// refer to PublishReq.evt
+	// The server-sent event goes through the downlink to the client.
 	Evt                  string   `protobuf:"bytes,3,opt,name=evt,proto3" json:"evt,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
