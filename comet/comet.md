@@ -8,15 +8,15 @@ Table of Contents
     * [Method Comet.Broadcast](#method-cometbroadcast)
     * [Method Comet.DumpSession](#method-cometdumpsession)
 * [Enums](#enums)
-	* [Enum MsgType](#enum-msgtype)
+    * [Enum MsgType](#enum-msgtype)
 * [Objects](#objects)
-	* [Object Room](#object-room)
-	* [Object Session](#object-session)
-	* [Object Heartbeat](#object-heartbeat)
-	* [Object Auth](#object-auth)
-	* [Object JoinRoom](#object-joinroom)
-	* [Object ServerPush](#object-serverpush)
-	* [Object Event](#object-event)
+    * [Object Room](#object-room)
+    * [Object Session](#object-session)
+    * [Object Heartbeat](#object-heartbeat)
+    * [Object Auth](#object-auth)
+    * [Object JoinRoom](#object-joinroom)
+    * [Object ServerPush](#object-serverpush)
+    * [Object Event](#object-event)
 
 
 
