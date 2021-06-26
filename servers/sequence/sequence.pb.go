@@ -21,6 +21,7 @@ var _ = math.Inf
 const _ = proto.ProtoPackageIsVersion3 // please upgrade the proto package
 
 type NextReq struct {
+	// 序列号命名。每个命名有自己的递增序列号，与其它命名互不影响。
 	Name                 string   `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -60,6 +61,7 @@ func (m *NextReq) GetName() string {
 }
 
 type NextRes struct {
+	// 序列号的值。
 	Value                uint64   `protobuf:"varint,2,opt,name=value,proto3" json:"value,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -99,6 +101,7 @@ func (m *NextRes) GetValue() uint64 {
 }
 
 type MaxReq struct {
+	// 序列号命名。
 	Name                 string   `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -138,6 +141,7 @@ func (m *MaxReq) GetName() string {
 }
 
 type MaxRes struct {
+	// 序列号的值。
 	Value                uint64   `protobuf:"varint,2,opt,name=value,proto3" json:"value,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`

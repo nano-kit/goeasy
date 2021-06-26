@@ -155,10 +155,7 @@ Attributes
 
 
 
-Attributes
-
-|   Name    |   Type    |  Description |
-| --------- | --------- | ------------ |
+It has no attributes
 
 
 ### object Auth

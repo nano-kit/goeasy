@@ -42,9 +42,13 @@ func NewSequenceEndpoints() []*api.Endpoint {
 // Client API for Sequence service
 
 type SequenceService interface {
-	// 对请求的序列号，加1之后返回
+	// 对请求的序列号，加1之后返回。每个命名的序列号，从1开始。
 	Next(ctx context.Context, in *NextReq, opts ...client.CallOption) (*NextRes, error)
-	// 对请求的序列号，返回已分配的最大值
+	// 对请求的序列号，返回已分配的最大值。序列号用于终端和后台
+	// 的数据同步。考虑到一种情况：终端由于特殊原因收不到新消息
+	// 通知，因此终端决定对后台做轮询。当终端来后台收取未读消息
+	// 时，Max可以作为第一道检查，避免直接访问消息缓存查找是否
+	// 有未读消息。
 	Max(ctx context.Context, in *MaxReq, opts ...client.CallOption) (*MaxRes, error)
 }
 
@@ -83,9 +87,13 @@ func (c *sequenceService) Max(ctx context.Context, in *MaxReq, opts ...client.Ca
 // Server API for Sequence service
 
 type SequenceHandler interface {
-	// 对请求的序列号，加1之后返回
+	// 对请求的序列号，加1之后返回。每个命名的序列号，从1开始。
 	Next(context.Context, *NextReq, *NextRes) error
-	// 对请求的序列号，返回已分配的最大值
+	// 对请求的序列号，返回已分配的最大值。序列号用于终端和后台
+	// 的数据同步。考虑到一种情况：终端由于特殊原因收不到新消息
+	// 通知，因此终端决定对后台做轮询。当终端来后台收取未读消息
+	// 时，Max可以作为第一道检查，避免直接访问消息缓存查找是否
+	// 有未读消息。
 	Max(context.Context, *MaxReq, *MaxRes) error
 }
 

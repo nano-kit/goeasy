@@ -11,30 +11,33 @@ service LiveRoom {
 }
 
 message SendReq {
-    string room = 1;
-    RoomMessage msg = 2;
+    string room = 1; // 聊天室ID
+    RoomMessage msg = 2; // 本次发送的消息
 }
 
 message SendRes {
 }
 
 message RecvReq {
+    // 聊天室ID
     string room = 1;
     // 客户端记住的已经收取到的最后一条消息的序列号
-    uint64 known_msg_seq = 2;
+    uint64 last_seq = 2;
 }
 
 message RecvRes {
-    // 本次收取的所有未读消息，按seq排序，最小的seq必须比known_msg_seq大
+    // 本次收取的所有未读消息，按seq排序，最小的seq必须比last_seq大
     repeated RoomMessage msgs = 1;
 }
 
+// 聊天室消息
 message RoomMessage {
+    // 消息类型
     enum Type {
         UNSPECIFIED = 0;
-        ENTER_ROOM = 1;
-        LEAVE_ROOM = 2;
-        PLAIN_TEXT = 3;
+        ENTER_ROOM = 1; // 进入聊天室
+        LEAVE_ROOM = 2; // 退出聊天室
+        PLAIN_TEXT = 3; // 文本消息
     }
 
     // 聊天室里的每条消息都有唯一的seq，新消息的seq总是更大
@@ -43,7 +46,7 @@ message RoomMessage {
     Type typ = 2;
     // 谁发出的消息
     string uid = 3;
-    // 何时发出的消息
+    // 何时发出的消息（毫秒时间戳）
     int64 send_at = 4;
 
     // 具体消息对象，与消息类型对应
@@ -52,12 +55,15 @@ message RoomMessage {
     MsgPlainText plain_text = 7;
 }
 
+// 进入聊天室
 message MsgEnterRoom {
 }
 
+// 退出聊天室
 message MsgLeaveRoom {
 }
 
+// 聊天室文本消息
 message MsgPlainText {
-    string text = 1;
+    string text = 1; // 消息内容
 }
