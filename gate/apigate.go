@@ -25,8 +25,11 @@ const (
 )
 
 type Server struct {
-	Address   string `json:"api_serving_address"`
-	Namespace string `json:"namespace"`
+	Address    string `json:"api_serving_address"`
+	Namespace  string `json:"namespace"`
+	Domain     string `json:"domain"`
+	EnableTLS  bool   `json:"enable_gate_tls"`
+	EnableACME bool   `json:"enable_gate_acme"`
 }
 
 func NewServer() *Server {
@@ -52,6 +55,8 @@ func (s *Server) Run() {
 	// initialize the API gate server
 	var opts []server.Option
 	opts = append(opts, server.EnableCORS(true))
+	opts = s.configureTLS(opts)
+
 	// create the router
 	var httpHandler http.Handler
 	muxRouter := mux.NewRouter()
