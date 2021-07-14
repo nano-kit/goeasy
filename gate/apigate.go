@@ -28,8 +28,8 @@ type Server struct {
 	Address    string `json:"api_serving_address"`
 	Namespace  string `json:"namespace"`
 	Domain     string `json:"domain"`
-	EnableTLS  bool   `json:"enable_gate_tls"`
-	EnableACME bool   `json:"enable_gate_acme"`
+	EnableTLS  bool   `json:"enable_api_tls"`
+	EnableACME bool   `json:"enable_api_acme"`
 }
 
 func NewServer() *Server {

@@ -5,6 +5,6 @@ redis_server_address: 127.0.0.1:6379
 # 服务器的域名。为空则是开发服，不使用域名
 domain:
 # 是否在APIGateway启用HTTPS
-enable_gate_tls: false
-# 是否在APIGateway启用ACME
-enable_gate_acme: false
+enable_api_tls: false
+# 是否在APIGateway启用ACME。启用时，必须设置域名。启用后，只能在:443端口监听
+enable_api_acme: false
