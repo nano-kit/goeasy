@@ -32,9 +32,20 @@ func (s *Server) configureTLS(opts []server.Option) []server.Option {
 			log.Fatalf("need to set the domain name if enabled ACME")
 		}
 
-		opts = append(opts, server.EnableACME(true))
-		opts = append(opts, server.ACMEHosts(s.Domain))
-		opts = append(opts, server.ACMEProvider(autocert.NewProvider()))
+		if s.listenOn443() {
+			// ACME challenges work on port 443 only
+			opts = append(opts, server.EnableACME(true))
+			opts = append(opts, server.ACMEHosts(s.Domain))
+			opts = append(opts, server.ACMEProvider(autocert.NewProvider()))
+		} else {
+			// assume ACME challenges are completed, we just want to reuse the cached certificate...
+			config, err := autocert.NewProvider().TLSConfig(s.Domain)
+			if err != nil {
+				log.Fatalf("can not get TLSConfig from the ACME provider: %v", err)
+			}
+			opts = append(opts, server.EnableTLS(true))
+			opts = append(opts, server.TLSConfig(config))
+		}
 	}
 
 	return opts
@@ -57,4 +68,11 @@ func (s *Server) hosts() []string {
 	}
 
 	return hosts
+}
+
+func (s *Server) listenOn443() bool {
+	if host, port, err := net.SplitHostPort(s.Address); err == nil {
+		return len(host) == 0 && port == "443"
+	}
+	return false
 }
