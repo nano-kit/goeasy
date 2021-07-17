@@ -21,7 +21,7 @@ ENDPOINT (WebSocket)
 REQUEST (*first-message*)
 ```
     {
-        "t":"AUTH",
+        "type":"AUTH",
         "auth": { "token": "" },
         "join": { "rid": "" }
     }
@@ -29,22 +29,22 @@ REQUEST (*first-message*)
 
 REQUEST (*heartbeat-keepalive*)
 ```
-    { "t":"HB" }
+    { "type":"HB" }
 ```
 
 REQUEST (*join-room*)
 ```
-    { "t":"JOIN", "join": { "rid": "" } }
+    { "type":"JOIN", "join": { "rid": "" } }
 ```
 
 RESPONSE (*heartbeat-probe*)
 ```
-    { "t":"HB" }
+    { "type":"HB" }
 ```
 
 RESPONSE (*server-pushed-event*)
 ```
-    { "t":"PUSH", "push": { "evt": "" } }
+    { "type":"PUSH", "push": { "evt": "" } }
 ```
 
 ## Details
