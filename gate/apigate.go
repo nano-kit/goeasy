@@ -3,6 +3,7 @@ package gate
 import (
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/micro/go-micro/v2"
@@ -54,7 +55,10 @@ func (s *Server) Run() {
 
 	// initialize the API gate server
 	var opts []server.Option
-	opts = append(opts, server.EnableCORS(true))
+	opts = append(opts,
+		server.EnableCORS(true),
+		server.KeepaliveTimeout(10*time.Second),
+	)
 	opts = s.configureTLS(opts)
 
 	// create the router
