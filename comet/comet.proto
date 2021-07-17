@@ -77,21 +77,22 @@ message Session {
 }
 
 message Uplink {
-    // t is used to differentiate what this uplink message is
-    MsgType t = 1;
+    // type is used to differentiate what this uplink message is
+    Packet type = 1;
     Heartbeat hb = 2;
     Auth auth = 3;
     JoinRoom join = 4;
 }
 
 message Downlink {
-    // t is used to differentiate what this downlink message is
-    MsgType t = 1;
+    // type is used to differentiate what this downlink message is
+    Packet type = 1;
     Heartbeat hb = 2;
     ServerPush push = 3;
 }
 
-enum MsgType {
+// The type of packet that is transferring on the wire of uplink and downlink
+enum Packet {
     // Heartbeat is sent on downlink and uplink, to keep the persistent connection alive
     HB = 0;
     // Auth is sent on uplink as the first message for Comet.Subscribe
@@ -135,4 +136,17 @@ message Event {
     string rid = 2;
     // The server-sent event goes through the downlink to the client.
     string evt = 3;
+}
+
+// Message is the general content predefined by comet for server-sent event.
+// It is stringified to JSON and then assigned to `string evt`.
+message Message {
+    // A optional string identifying the server that generates event.
+    string server = 1;
+    // A string identifying the type of event.
+    string event = 2;
+    // The data field for the message.
+    string data = 3;
+    // The event ID.
+    string id = 4;
 }

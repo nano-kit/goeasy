@@ -65,8 +65,8 @@ func (c *Comet) Subscribe(ctx context.Context, stream Comet_SubscribeStream) err
 		return errs.BadRequest("incorrect-protocol", "stream recv: %v", err)
 	}
 	token := req.GetAuth().GetToken()
-	if req.T != MsgType_AUTH {
-		return errs.BadRequest("incorrect-protocol", "expect message type AUTH but got %v: %v", req.T, token)
+	if req.Type != Packet_AUTH {
+		return errs.BadRequest("incorrect-protocol", "expect message type AUTH but got %v: %v", req.Type, token)
 	}
 	account, err := iauth.AccountFromToken(token)
 	if err != nil {
@@ -122,8 +122,8 @@ func (c *Comet) recv(ctx context.Context) (err error) {
 		// update uplink activity on any uplink message
 		*sc.uplinkActivity = time.Now()
 		// handle uplink commands
-		switch uplink.T {
-		case MsgType_JOIN:
+		switch uplink.Type {
+		case Packet_JOIN:
 			if _, err = c.rm.JoinRoom(sc.account.ID, uplink.GetJoin().GetRid()); err != nil {
 				return fmt.Errorf("process %q uplink: %v", sc.account.ID, err)
 			}
@@ -148,8 +148,8 @@ func (c *Comet) tick(ctx context.Context) (err error) {
 	// request uplink probe by sending a downlink heartbeat
 	if idle >= heartbeatDuration-time.Second {
 		if err := sc.stream.Send(&Downlink{
-			T:  MsgType_HB,
-			Hb: &Heartbeat{},
+			Type: Packet_HB,
+			Hb:   &Heartbeat{},
 		}); err != nil {
 			return fmt.Errorf("server tick %q: send heartbeat: %v", sc.account.ID, err)
 		}
@@ -160,7 +160,7 @@ func (c *Comet) tick(ctx context.Context) (err error) {
 func (c *Comet) send(ctx context.Context, msg pubsub.Message) (bool, error) {
 	sc := ctx.Value(streamCtxKey{}).(streamCtx)
 	err := sc.stream.Send(&Downlink{
-		T: MsgType_PUSH,
+		Type: Packet_PUSH,
 		Push: &ServerPush{
 			Evt: msg.Body().(string),
 		},

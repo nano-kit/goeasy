@@ -8,7 +8,7 @@ Table of Contents
     * [Method Comet.Broadcast](#method-cometbroadcast)
     * [Method Comet.DumpSession](#method-cometdumpsession)
 * [Enums](#enums)
-    * [Enum MsgType](#enum-msgtype)
+    * [Enum Packet](#enum-packet)
 * [Objects](#objects)
     * [Object Room](#object-room)
     * [Object Session](#object-session)
@@ -17,6 +17,7 @@ Table of Contents
     * [Object JoinRoom](#object-joinroom)
     * [Object ServerPush](#object-serverpush)
     * [Object Event](#object-event)
+    * [Object Message](#object-message)
 
 
 
@@ -37,7 +38,7 @@ Request parameters
 
 |   Name    |   Type    |  Description |
 | --------- | --------- | ------------ |
-| t | [enum MsgType](#enum-msgtype) | t is used to differentiate what this uplink message is |
+| type | [enum Packet](#enum-packet) | type is used to differentiate what this uplink message is |
 | hb | [object Heartbeat](#object-heartbeat) |  |
 | auth | [object Auth](#object-auth) |  |
 | join | [object JoinRoom](#object-joinroom) |  |
@@ -46,7 +47,7 @@ Response parameters
 
 |   Name    |   Type    |  Description |
 | --------- | --------- | ------------ |
-| t | [enum MsgType](#enum-msgtype) | t is used to differentiate what this downlink message is |
+| type | [enum Packet](#enum-packet) | type is used to differentiate what this downlink message is |
 | hb | [object Heartbeat](#object-heartbeat) |  |
 | push | [object ServerPush](#object-serverpush) |  |
 
@@ -110,9 +111,9 @@ Response parameters
 
 ## Enums
 
-### enum MsgType
+### enum Packet
 
-
+The type of packet that is transferring on the wire of uplink and downlink
 
 Constants
 
@@ -202,4 +203,18 @@ Attributes
 | uid | string | The unique user identity |
 | rid | string | The room identity |
 | evt | string | The server-sent event goes through the downlink to the client. |
+
+
+### object Message
+
+Message is the general content predefined by comet for server-sent event. It is stringified to JSON and then assigned to `string evt`.
+
+Attributes
+
+|   Name    |   Type    |  Description |
+| --------- | --------- | ------------ |
+| server | string | A optional string identifying the server that generates event. |
+| event | string | A string identifying the type of event. |
+| data | string | The data field for the message. |
+| id | string | The event ID. |
 

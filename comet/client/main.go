@@ -57,7 +57,7 @@ func main() {
 	acc := &auth.Account{ID: *uid, Issuer: "io.goeasy"}
 	token := iauth.AccountToToken(acc)
 	uplink := &comet.Uplink{
-		T: comet.MsgType_AUTH,
+		Type: comet.Packet_AUTH,
 		Auth: &comet.Auth{
 			Token: token,
 		},
@@ -84,7 +84,7 @@ func main() {
 		if err := jsonUnmarshal(buf, &downlink); err != nil {
 			panic(err)
 		}
-		if downlink.T == comet.MsgType_HB {
+		if downlink.Type == comet.Packet_HB {
 			// when receiving a downlink heartbeat, send an uplink heartbeat
 			if err := wsutil.WriteClientText(conn, []byte("{}")); err != nil {
 				panic(err)
@@ -93,7 +93,7 @@ func main() {
 		}
 		if strings.HasPrefix(downlink.Push.Evt, "#join:") {
 			buf, _ := jsonMarshal(&comet.Uplink{
-				T: comet.MsgType_JOIN,
+				Type: comet.Packet_JOIN,
 				Join: &comet.JoinRoom{
 					Rid: strings.TrimPrefix(downlink.Push.Evt, "#join:"),
 				},
