@@ -3,6 +3,7 @@ package liveroom
 import (
 	"github.com/micro/go-micro/v2"
 	log "github.com/micro/go-micro/v2/logger"
+	"github.com/micro/go-micro/v2/server"
 	iconf "github.com/nano-kit/goeasy/internal/config"
 )
 
@@ -35,7 +36,10 @@ func (s *Server) Run() {
 	service := micro.NewService(srvOpts...)
 
 	RegisterDemoHandler(service.Server(), new(Demo))
-	RegisterRoomHandler(service.Server(), new(Room))
+	room := new(Room)
+	RegisterRoomHandler(service.Server(), room)
+	micro.RegisterSubscriber(s.Namespace+".topic.user-activity", service.Server(), room.onUserActivity,
+		server.SubscriberQueue(s.Name()))
 
 	// Run micro server
 	if err := service.Run(); err != nil {

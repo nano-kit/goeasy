@@ -131,11 +131,19 @@ func (c *Comet) Subscribe(ctx context.Context, stream Comet_SubscribeStream) err
 	c.g.Subscribe(ctx, account.ID, c.send, pubsub.WithTicker(heartbeatDuration, c.tick))
 
 	// publish user offline
+	timeOffline := time.Now().UnixNano()
+	if rid := ses.RID(); rid != "" {
+		c.userActivity.Publish(ctx, &proto.UserActivityEvent{
+			Type: proto.UserActivityEvent_LEAVE_ROOM,
+			Uid:  account.ID,
+			Rid:  rid,
+			Time: timeOffline,
+		})
+	}
 	c.userActivity.Publish(ctx, &proto.UserActivityEvent{
 		Type: proto.UserActivityEvent_OFFLINE,
 		Uid:  account.ID,
-		Rid:  ses.RID(),
-		Time: time.Now().UnixNano(),
+		Time: timeOffline,
 	})
 
 	return nil
