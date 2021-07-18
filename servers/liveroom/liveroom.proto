@@ -3,7 +3,7 @@ syntax = "proto3";
 package liveroom;
 
 // 聊天室服务
-service LiveRoom {
+service Room {
     // 在聊天室里，发送消息
     rpc Send(SendReq) returns (SendRes);
     // 收取聊天室里的未读消息
@@ -43,7 +43,7 @@ message RoomMessage {
     // 聊天室里的每条消息都有唯一的seq，新消息的seq总是更大
     uint64 seq = 1;
     // 消息类型
-    Type typ = 2;
+    Type type = 2;
     // 谁发出的消息
     string uid = 3;
     // 何时发出的消息（毫秒时间戳）

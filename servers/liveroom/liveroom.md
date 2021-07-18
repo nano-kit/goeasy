@@ -2,9 +2,9 @@
 
 Table of Contents
 
-* [Service LiveRoom](#service-liveroom)
-    * [Method LiveRoom.Send](#method-liveroomsend)
-    * [Method LiveRoom.Recv](#method-liveroomrecv)
+* [Service Room](#service-room)
+    * [Method Room.Send](#method-roomsend)
+    * [Method Room.Recv](#method-roomrecv)
 * [Enums](#enums)
     * [Enum RoomMessage.Type](#enum-roommessagetype)
 * [Objects](#objects)
@@ -16,13 +16,13 @@ Table of Contents
 
 
 
-## Service LiveRoom
+## Service Room
 
 聊天室服务
 
-### Method LiveRoom.Send
+### Method Room.Send
 
-> POST /liveroom/LiveRoom/Send <br/>
+> POST /liveroom/Room/Send <br/>
 > Content-Type: application/json <br/>
 > Authorization: Bearer (token) <br/>
 
@@ -38,9 +38,9 @@ Request parameters
 Response is empty
 
 
-### Method LiveRoom.Recv
+### Method Room.Recv
 
-> POST /liveroom/LiveRoom/Recv <br/>
+> POST /liveroom/Room/Recv <br/>
 > Content-Type: application/json <br/>
 > Authorization: Bearer (token) <br/>
 
@@ -90,7 +90,7 @@ Attributes
 |   Name    |   Type    |  Description |
 | --------- | --------- | ------------ |
 | seq | uint64 | 聊天室里的每条消息都有唯一的seq，新消息的seq总是更大 |
-| typ | [enum RoomMessage.Type](#enum-roommessagetype) | 消息类型 |
+| type | [enum RoomMessage.Type](#enum-roommessagetype) | 消息类型 |
 | uid | string | 谁发出的消息 |
 | send_at | int64 | 何时发出的消息（毫秒时间戳） |
 | enter_room | [object MsgEnterRoom](#object-msgenterroom) | 具体消息对象，与消息类型对应 |

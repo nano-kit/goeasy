@@ -33,35 +33,35 @@ var _ context.Context
 var _ client.Option
 var _ server.Option
 
-// Api Endpoints for LiveRoom service
+// Api Endpoints for Room service
 
-func NewLiveRoomEndpoints() []*api.Endpoint {
+func NewRoomEndpoints() []*api.Endpoint {
 	return []*api.Endpoint{}
 }
 
-// Client API for LiveRoom service
+// Client API for Room service
 
-type LiveRoomService interface {
+type RoomService interface {
 	// 在聊天室里，发送消息
 	Send(ctx context.Context, in *SendReq, opts ...client.CallOption) (*SendRes, error)
 	// 收取聊天室里的未读消息
 	Recv(ctx context.Context, in *RecvReq, opts ...client.CallOption) (*RecvRes, error)
 }
 
-type liveRoomService struct {
+type roomService struct {
 	c    client.Client
 	name string
 }
 
-func NewLiveRoomService(name string, c client.Client) LiveRoomService {
-	return &liveRoomService{
+func NewRoomService(name string, c client.Client) RoomService {
+	return &roomService{
 		c:    c,
 		name: name,
 	}
 }
 
-func (c *liveRoomService) Send(ctx context.Context, in *SendReq, opts ...client.CallOption) (*SendRes, error) {
-	req := c.c.NewRequest(c.name, "LiveRoom.Send", in)
+func (c *roomService) Send(ctx context.Context, in *SendReq, opts ...client.CallOption) (*SendRes, error) {
+	req := c.c.NewRequest(c.name, "Room.Send", in)
 	out := new(SendRes)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
@@ -70,8 +70,8 @@ func (c *liveRoomService) Send(ctx context.Context, in *SendReq, opts ...client.
 	return out, nil
 }
 
-func (c *liveRoomService) Recv(ctx context.Context, in *RecvReq, opts ...client.CallOption) (*RecvRes, error) {
-	req := c.c.NewRequest(c.name, "LiveRoom.Recv", in)
+func (c *roomService) Recv(ctx context.Context, in *RecvReq, opts ...client.CallOption) (*RecvRes, error) {
+	req := c.c.NewRequest(c.name, "Room.Recv", in)
 	out := new(RecvRes)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
@@ -80,35 +80,35 @@ func (c *liveRoomService) Recv(ctx context.Context, in *RecvReq, opts ...client.
 	return out, nil
 }
 
-// Server API for LiveRoom service
+// Server API for Room service
 
-type LiveRoomHandler interface {
+type RoomHandler interface {
 	// 在聊天室里，发送消息
 	Send(context.Context, *SendReq, *SendRes) error
 	// 收取聊天室里的未读消息
 	Recv(context.Context, *RecvReq, *RecvRes) error
 }
 
-func RegisterLiveRoomHandler(s server.Server, hdlr LiveRoomHandler, opts ...server.HandlerOption) error {
-	type liveRoom interface {
+func RegisterRoomHandler(s server.Server, hdlr RoomHandler, opts ...server.HandlerOption) error {
+	type room interface {
 		Send(ctx context.Context, in *SendReq, out *SendRes) error
 		Recv(ctx context.Context, in *RecvReq, out *RecvRes) error
 	}
-	type LiveRoom struct {
-		liveRoom
+	type Room struct {
+		room
 	}
-	h := &liveRoomHandler{hdlr}
-	return s.Handle(s.NewHandler(&LiveRoom{h}, opts...))
+	h := &roomHandler{hdlr}
+	return s.Handle(s.NewHandler(&Room{h}, opts...))
 }
 
-type liveRoomHandler struct {
-	LiveRoomHandler
+type roomHandler struct {
+	RoomHandler
 }
 
-func (h *liveRoomHandler) Send(ctx context.Context, in *SendReq, out *SendRes) error {
-	return h.LiveRoomHandler.Send(ctx, in, out)
+func (h *roomHandler) Send(ctx context.Context, in *SendReq, out *SendRes) error {
+	return h.RoomHandler.Send(ctx, in, out)
 }
 
-func (h *liveRoomHandler) Recv(ctx context.Context, in *RecvReq, out *RecvRes) error {
-	return h.LiveRoomHandler.Recv(ctx, in, out)
+func (h *roomHandler) Recv(ctx context.Context, in *RecvReq, out *RecvRes) error {
+	return h.RoomHandler.Recv(ctx, in, out)
 }
