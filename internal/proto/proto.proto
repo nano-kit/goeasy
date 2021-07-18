@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+package proto;
+
+// Event is the asynchronous message using Go-Micro's message broker interface.
+// refer to Comet.onEvent
+message Event {
+    // The unique user identity
+    string uid = 1;
+    // The room identity
+    string rid = 2;
+    // The server-sent event goes through the downlink to the client.
+    string evt = 3;
+}
+
+// Message is the general content predefined by comet for server-sent event.
+// It is stringified to JSON and then assigned to `string evt`.
+message Message {
+    // A optional string identifying the server that generates event.
+    string server = 1;
+    // A string identifying the type of event.
+    string event = 2;
+    // The data field for the message.
+    string data = 3;
+    // The event ID.
+    string id = 4;
+    // The time this event happens. It is the number of nanoseconds elapsed since January 1, 1970 UTC.
+    int64  time = 5;
+}

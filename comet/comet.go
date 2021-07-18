@@ -12,6 +12,7 @@ import (
 	"github.com/micro/go-micro/v2/metadata"
 	"github.com/micro/go-micro/v2/util/pubsub"
 	iauth "github.com/nano-kit/goeasy/internal/auth"
+	"github.com/nano-kit/goeasy/internal/proto"
 	"github.com/nano-kit/goeasy/internal/rmgr"
 )
 
@@ -239,7 +240,7 @@ func dumpRoom(room *rmgr.Room) *Room {
 // Event is published to a topic which any comet instance is subscribing. As
 // every user is landing upon a comet, the event will finally reach that user.
 // Event that designates to room or world will also reach every user within.
-func (c *Comet) onEvent(ctx context.Context, event *Event) error {
+func (c *Comet) onEvent(ctx context.Context, event *proto.Event) error {
 	if event.Uid != "" {
 		return c.Publish(ctx, &PublishReq{
 			Uid: event.Uid,
