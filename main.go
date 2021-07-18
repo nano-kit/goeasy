@@ -13,6 +13,7 @@ import (
 	"github.com/nano-kit/goeasy/gate"
 	"github.com/nano-kit/goeasy/internal/reexec"
 	"github.com/nano-kit/goeasy/servers/liveroom"
+	liveuser "github.com/nano-kit/goeasy/servers/liveuser/impl"
 	sequence "github.com/nano-kit/goeasy/servers/sequence/impl"
 )
 
@@ -30,6 +31,7 @@ var (
 		{server: comet.NewServer()},
 		{server: sequence.NewServer()},
 		{server: liveroom.NewServer()},
+		{server: liveuser.NewServer()},
 	}
 )
 

@@ -6,7 +6,9 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/micro/go-micro/v2"
 	"github.com/micro/go-micro/v2/auth"
+	"github.com/micro/go-micro/v2/client"
 	errs "github.com/micro/go-micro/v2/errors"
 	"github.com/micro/go-micro/v2/logger"
 	"github.com/micro/go-micro/v2/metadata"
@@ -20,16 +22,18 @@ import (
 const heartbeatDuration = 1 * time.Minute
 
 type Comet struct {
-	namespace string
-	g         *pubsub.Group
-	rm        *rmgr.Bucket
+	namespace    string
+	g            *pubsub.Group
+	rm           *rmgr.Bucket
+	userActivity micro.Event
 }
 
-func NewComet(namespace string) *Comet {
+func NewComet(namespace string, cli client.Client) *Comet {
 	return &Comet{
-		namespace: namespace,
-		g:         pubsub.New(),
-		rm:        rmgr.NewBucket(),
+		namespace:    namespace,
+		g:            pubsub.New(),
+		rm:           rmgr.NewBucket(),
+		userActivity: micro.NewEvent(namespace+".topic.user-activity", cli),
 	}
 }
 
@@ -105,9 +109,35 @@ func (c *Comet) Subscribe(ctx context.Context, stream Comet_SubscribeStream) err
 		return errs.InternalServerError("broken-session", "%v", err)
 	}
 
+	// publish user online
+	timeOnline := time.Now().UnixNano()
+	c.userActivity.Publish(ctx, &proto.UserActivityEvent{
+		Type: proto.UserActivityEvent_ONLINE,
+		Uid:  account.ID,
+		Time: timeOnline,
+	})
+	if rid := req.GetJoin().GetRid(); rid != "" {
+		c.userActivity.Publish(ctx, &proto.UserActivityEvent{
+			Type: proto.UserActivityEvent_ENTER_ROOM,
+			Uid:  account.ID,
+			Rid:  rid,
+			Time: timeOnline,
+		})
+	}
+
+	// the core processing
 	ctx = context.WithValue(ctx, streamCtxKey{}, streamCtx{account, stream, cancel, &uplinkActivity})
 	c.g.Go(ctx, c.recv)
 	c.g.Subscribe(ctx, account.ID, c.send, pubsub.WithTicker(heartbeatDuration, c.tick))
+
+	// publish user offline
+	c.userActivity.Publish(ctx, &proto.UserActivityEvent{
+		Type: proto.UserActivityEvent_OFFLINE,
+		Uid:  account.ID,
+		Rid:  ses.RID(),
+		Time: time.Now().UnixNano(),
+	})
+
 	return nil
 }
 
@@ -122,13 +152,46 @@ func (c *Comet) recv(ctx context.Context) (err error) {
 		logger.Debugf("RX %q %v", sc.account.ID, uplink)
 		// update uplink activity on any uplink message
 		*sc.uplinkActivity = time.Now()
+		// publish user heard
+		c.userActivity.Publish(ctx, &proto.UserActivityEvent{
+			Type: proto.UserActivityEvent_HEARD,
+			Uid:  sc.account.ID,
+			Time: sc.uplinkActivity.UnixNano(),
+		})
 		// handle uplink commands
 		switch uplink.Type {
 		case Packet_JOIN:
-			if _, err = c.rm.JoinRoom(sc.account.ID, uplink.GetJoin().GetRid()); err != nil {
+			if orid, err := c.rm.JoinRoom(sc.account.ID, uplink.GetJoin().GetRid()); err != nil {
 				return fmt.Errorf("process %q uplink: %v", sc.account.ID, err)
+			} else {
+				c.publishJoinRoom(ctx, sc.account.ID, uplink.GetJoin().GetRid(), orid)
 			}
 		}
+	}
+}
+
+func (c *Comet) publishJoinRoom(ctx context.Context, uid, rid, orid string) {
+	now := time.Now().UnixNano()
+
+	// do nothing if room is not changed
+	if orid == rid {
+		return
+	}
+
+	// leave the original room
+	if orid != "" {
+		c.userActivity.Publish(ctx, &proto.UserActivityEvent{
+			Type: proto.UserActivityEvent_LEAVE_ROOM,
+			Uid:  uid, Rid: orid, Time: now,
+		})
+	}
+
+	// enter the target room
+	if rid != "" {
+		c.userActivity.Publish(ctx, &proto.UserActivityEvent{
+			Type: proto.UserActivityEvent_ENTER_ROOM,
+			Uid:  uid, Rid: rid, Time: now,
+		})
 	}
 }
 

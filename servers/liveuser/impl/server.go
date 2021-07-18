@@ -1,13 +1,14 @@
-package comet
+package impl
 
 import (
 	"github.com/micro/go-micro/v2"
 	log "github.com/micro/go-micro/v2/logger"
+	"github.com/micro/go-micro/v2/server"
 	iconf "github.com/nano-kit/goeasy/internal/config"
 )
 
 const (
-	ServiceName = "comet"
+	ServiceName = "liveuser"
 )
 
 type Server struct {
@@ -34,9 +35,10 @@ func (s *Server) Run() {
 	srvOpts = append(srvOpts, micro.Name(s.Name()))
 	service := micro.NewService(srvOpts...)
 
-	comet := NewComet(s.Namespace, service.Client())
-	RegisterCometHandler(service.Server(), comet)
-	micro.RegisterSubscriber(s.Name(), service.Server(), comet.onEvent)
+	// register subscriber
+	user := new(User)
+	micro.RegisterSubscriber(s.Namespace+".topic.user-activity", service.Server(), user.onUserActivity,
+		server.SubscriberQueue(s.Name()))
 
 	// Run micro server
 	if err := service.Run(); err != nil {
