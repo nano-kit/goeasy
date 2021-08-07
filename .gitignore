@@ -16,3 +16,7 @@
 .DS_Store
 goeasy
 comet/client/client
+
+# IDE files
+.idea/
+*.iml
