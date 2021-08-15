@@ -20,3 +20,5 @@ comet/client/client
 # IDE files
 .idea/
 *.iml
+
+server.log

@@ -26,11 +26,13 @@ const (
 )
 
 type Server struct {
-	Address    string `json:"api_serving_address"`
-	Namespace  string `json:"namespace"`
-	Domain     string `json:"domain"`
-	EnableTLS  bool   `json:"enable_api_tls"`
-	EnableACME bool   `json:"enable_api_acme"`
+	Address        string   `json:"api_serving_address"`
+	Namespace      string   `json:"namespace"`
+	Production     bool     `json:"production"`
+	LogOutputPaths []string `json:"logging_output_paths"`
+	Domain         string   `json:"domain"`
+	EnableTLS      bool     `json:"enable_api_tls"`
+	EnableACME     bool     `json:"enable_api_acme"`
 }
 
 func NewServer() *Server {
@@ -46,7 +48,11 @@ func (s *Server) Name() string {
 }
 
 func (s *Server) Run() {
-	log.Init(log.WithFields(map[string]interface{}{"service": ServiceName}))
+	log.Init(
+		log.WithFields(map[string]interface{}{"service": ServiceName}),
+		log.SetOption("outputs", s.LogOutputPaths),
+		log.SetOption("color", !s.Production),
+	)
 
 	// initialize the micro service
 	var srvOpts []micro.Option

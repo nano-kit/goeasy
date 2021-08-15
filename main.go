@@ -11,6 +11,7 @@ import (
 	signalutil "github.com/micro/go-micro/v2/util/signal"
 	"github.com/nano-kit/goeasy/comet"
 	"github.com/nano-kit/goeasy/gate"
+	iconf "github.com/nano-kit/goeasy/internal/config"
 	"github.com/nano-kit/goeasy/internal/reexec"
 	"github.com/nano-kit/goeasy/servers/liveroom"
 	liveuser "github.com/nano-kit/goeasy/servers/liveuser/impl"
@@ -58,7 +59,19 @@ func main() {
 		return
 	}
 
-	log.Init(log.WithFields(map[string]interface{}{"service": "supervisor"}))
+	type Server struct {
+		Production     bool     `json:"production"`
+		LogOutputPaths []string `json:"logging_output_paths"`
+	}
+	s := &Server{}
+	if err := iconf.LoadInitialConfigFromFile("serverinit.yaml", s); err != nil {
+		panic(err)
+	}
+	log.Init(
+		log.WithFields(map[string]interface{}{"service": "supervisor"}),
+		log.SetOption("outputs", s.LogOutputPaths),
+		log.SetOption("color", !s.Production),
+	)
 	log.Info("Start")
 	term := make(chan os.Signal, 1)
 

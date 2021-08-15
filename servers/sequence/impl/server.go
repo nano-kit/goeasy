@@ -13,8 +13,10 @@ const (
 )
 
 type Server struct {
-	Namespace          string `json:"namespace"`
-	RedisServerAddress string `json:"redis_server_address"`
+	Namespace          string   `json:"namespace"`
+	Production         bool     `json:"production"`
+	LogOutputPaths     []string `json:"logging_output_paths"`
+	RedisServerAddress string   `json:"redis_server_address"`
 
 	redisDB *redis.Client
 }
@@ -32,7 +34,11 @@ func (s *Server) Name() string {
 }
 
 func (s *Server) Run() {
-	log.Init(log.WithFields(map[string]interface{}{"service": ServiceName}))
+	log.Init(
+		log.WithFields(map[string]interface{}{"service": ServiceName}),
+		log.SetOption("outputs", s.LogOutputPaths),
+		log.SetOption("color", !s.Production),
+	)
 
 	// initialize server's dependent resources
 	s.init()

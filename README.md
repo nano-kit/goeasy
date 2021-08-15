@@ -55,4 +55,103 @@ Why you need a build environment on VM?
 Because we do not has a CI/CD process. The minimum alternative is:
 
 1. pull your code from repository
-1.
+1. build on the VM
+1. start the service
+
+So straightforward, right? And it is so easy to fix and run.
+
+Let's say you are using the Ubuntu, to install Golang
+
+```bash
+sudo apt-get install golang-1.16
+export PATH=$HOME/go/bin:/usr/lib/go-1.16/bin:$PATH
+# add this if you are behind the GFW
+export GOPROXY=https://goproxy.io,direct
+```
+
+If you are like me, using [go-micro](https://github.com/nano-kit/go-micro/) to develop services, you can setup additional tools following the instruction [Getting Started](https://nano-kit.github.io/go-micro-in-action/getting-started.html).
+
+```
+$ ls go/bin
+micro  protoc-gen-go  protoc-gen-micro  protodoc
+```
+
+## Build the service
+
+Now, it is the time for `goeasy`, aka this project, as well as a project template and best practice. The project directory is described by [ProjectLayout](ProjectLayout.md).
+
+To generate protocol files and static assets bundle,
+
+```
+go generate -x ./...
+```
+
+Then build
+
+```
+go build
+```
+
+Please be aware what your build is an API service. The data transferred from front end to back end service should be minimal to save bandwidth charging. The front end is usually an SPA powered by [Vuetify](https://vuetifyjs.com/en/). You should deploy the front end to some sort of CDN, but not this VM. This is another story.
+
+## Deploy the service
+
+Use systemd to supervise and auto-start the service on OS boot.
+
+Just put this file under `/etc/systemd/system/goeasy.service`
+
+```
+[Unit]
+Description=goeasy
+Requires=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=root
+Group=root
+Restart=always
+RestartSec=5
+ExecStart=/opt/goeasy/bin/goeasy
+
+[Install]
+WantedBy=multi-user.target
+```
+
+### Configuration
+
+Put `serverinit.yaml` under the same directory as goeasy, that is `/opt/goeasy/bin`. The initial config data includes but not limited to serving address, namespace and database address, which are parameters that should be known before server starts and can not be changed until server stops.
+
+### Logging
+
+Log files are under directory `/opt/goeasy/log`. They are rotated by logrotate.
+
+### Metrics
+
+Install Prometheus by put this file under `/etc/systemd/system/prometheus.service`
+
+```
+[Unit]
+Description=Prometheus
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=huanghao
+Group=huanghao
+Restart=always
+RestartSec=5
+ExecReload=/bin/kill -HUP $MAINPID
+ExecStart=/opt/prometheus/prometheus \
+  --config.file=/opt/prometheus/prometheus.yml \
+  --storage.tsdb.path=/opt/prometheus/data \
+  --web.console.templates=/opt/prometheus/consoles \
+  --web.console.libraries=/opt/prometheus/console_libraries
+SyslogIdentifier=prometheus
+
+[Install]
+WantedBy=multi-user.target
+```
+
+## Play with the service
