@@ -18,6 +18,7 @@ import (
 	"github.com/nano-kit/goeasy/internal/handler"
 	"github.com/nano-kit/goeasy/internal/namespace"
 	"github.com/nano-kit/goeasy/internal/resolver/api"
+	"github.com/nano-kit/goeasy/internal/rlimit"
 )
 
 const (
@@ -53,6 +54,9 @@ func (s *Server) Run() {
 		log.SetOption("outputs", s.LogOutputPaths),
 		log.SetOption("color", !s.Production),
 	)
+
+	// set max open files
+	_ = rlimit.SetNumFiles(10240)
 
 	// initialize the micro service
 	var srvOpts []micro.Option
