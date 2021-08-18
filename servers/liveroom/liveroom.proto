@@ -4,10 +4,29 @@ package liveroom;
 
 // 聊天室服务
 service Room {
+    // 进入聊天室
+    rpc Enter(EnterReq) returns (EnterRes);
     // 在聊天室里，发送消息
     rpc Send(SendReq) returns (SendRes);
     // 收取聊天室里的未读消息
     rpc Recv(RecvReq) returns (RecvRes);
+    // 退出聊天室
+    rpc Leave(LeaveReq) returns (LeaveRes);
+}
+
+message EnterReq {
+    string room = 1; // 聊天室ID
+}
+
+message EnterRes {
+    repeated string uids = 1; // 聊天室里在线的人列表
+}
+
+message LeaveReq {
+    string room = 1; // 聊天室ID
+}
+
+message LeaveRes {
 }
 
 message SendReq {

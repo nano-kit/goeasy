@@ -2,6 +2,8 @@
 
 订阅和广播通道
 
+Deprecated: consider using [NATS](https://github.com/nats-io/nats-server) 2.3 and [nats.ws](https://github.com/nats-io/nats.ws) for an end to end solution.
+
 *comet* is a special service. It has a streaming endpoint *Subscribe*.
 A client (usually a web browser such as Google Chrome) subscribes to the server by setting up a WebSocket connection to this streaming endpoint.
 

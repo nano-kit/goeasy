@@ -42,10 +42,14 @@ func NewRoomEndpoints() []*api.Endpoint {
 // Client API for Room service
 
 type RoomService interface {
+	// 进入聊天室
+	Enter(ctx context.Context, in *EnterReq, opts ...client.CallOption) (*EnterRes, error)
 	// 在聊天室里，发送消息
 	Send(ctx context.Context, in *SendReq, opts ...client.CallOption) (*SendRes, error)
 	// 收取聊天室里的未读消息
 	Recv(ctx context.Context, in *RecvReq, opts ...client.CallOption) (*RecvRes, error)
+	// 退出聊天室
+	Leave(ctx context.Context, in *LeaveReq, opts ...client.CallOption) (*LeaveRes, error)
 }
 
 type roomService struct {
@@ -58,6 +62,16 @@ func NewRoomService(name string, c client.Client) RoomService {
 		c:    c,
 		name: name,
 	}
+}
+
+func (c *roomService) Enter(ctx context.Context, in *EnterReq, opts ...client.CallOption) (*EnterRes, error) {
+	req := c.c.NewRequest(c.name, "Room.Enter", in)
+	out := new(EnterRes)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (c *roomService) Send(ctx context.Context, in *SendReq, opts ...client.CallOption) (*SendRes, error) {
@@ -80,19 +94,35 @@ func (c *roomService) Recv(ctx context.Context, in *RecvReq, opts ...client.Call
 	return out, nil
 }
 
+func (c *roomService) Leave(ctx context.Context, in *LeaveReq, opts ...client.CallOption) (*LeaveRes, error) {
+	req := c.c.NewRequest(c.name, "Room.Leave", in)
+	out := new(LeaveRes)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Server API for Room service
 
 type RoomHandler interface {
+	// 进入聊天室
+	Enter(context.Context, *EnterReq, *EnterRes) error
 	// 在聊天室里，发送消息
 	Send(context.Context, *SendReq, *SendRes) error
 	// 收取聊天室里的未读消息
 	Recv(context.Context, *RecvReq, *RecvRes) error
+	// 退出聊天室
+	Leave(context.Context, *LeaveReq, *LeaveRes) error
 }
 
 func RegisterRoomHandler(s server.Server, hdlr RoomHandler, opts ...server.HandlerOption) error {
 	type room interface {
+		Enter(ctx context.Context, in *EnterReq, out *EnterRes) error
 		Send(ctx context.Context, in *SendReq, out *SendRes) error
 		Recv(ctx context.Context, in *RecvReq, out *RecvRes) error
+		Leave(ctx context.Context, in *LeaveReq, out *LeaveRes) error
 	}
 	type Room struct {
 		room
@@ -105,10 +135,18 @@ type roomHandler struct {
 	RoomHandler
 }
 
+func (h *roomHandler) Enter(ctx context.Context, in *EnterReq, out *EnterRes) error {
+	return h.RoomHandler.Enter(ctx, in, out)
+}
+
 func (h *roomHandler) Send(ctx context.Context, in *SendReq, out *SendRes) error {
 	return h.RoomHandler.Send(ctx, in, out)
 }
 
 func (h *roomHandler) Recv(ctx context.Context, in *RecvReq, out *RecvRes) error {
 	return h.RoomHandler.Recv(ctx, in, out)
+}
+
+func (h *roomHandler) Leave(ctx context.Context, in *LeaveReq, out *LeaveRes) error {
+	return h.RoomHandler.Leave(ctx, in, out)
 }

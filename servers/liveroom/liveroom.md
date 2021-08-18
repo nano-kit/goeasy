@@ -3,8 +3,10 @@
 Table of Contents
 
 * [Service Room](#service-room)
+    * [Method Room.Enter](#method-roomenter)
     * [Method Room.Send](#method-roomsend)
     * [Method Room.Recv](#method-roomrecv)
+    * [Method Room.Leave](#method-roomleave)
 * [Enums](#enums)
     * [Enum RoomMessage.Type](#enum-roommessagetype)
 * [Objects](#objects)
@@ -19,6 +21,27 @@ Table of Contents
 ## Service Room
 
 聊天室服务
+
+### Method Room.Enter
+
+> POST /liveroom/Room/Enter <br/>
+> Content-Type: application/json <br/>
+> Authorization: Bearer (token) <br/>
+
+进入聊天室
+
+Request parameters
+
+|   Name    |   Type    |  Description |
+| --------- | --------- | ------------ |
+| room | string | 聊天室ID |
+
+Response parameters
+
+|   Name    |   Type    |  Description |
+| --------- | --------- | ------------ |
+| uids | array of string | 聊天室里在线的人列表 |
+
 
 ### Method Room.Send
 
@@ -58,6 +81,23 @@ Response parameters
 |   Name    |   Type    |  Description |
 | --------- | --------- | ------------ |
 | msgs | array of [object RoomMessage](#object-roommessage) | 本次收取的所有未读消息，按seq排序，最小的seq必须比last_seq大 |
+
+
+### Method Room.Leave
+
+> POST /liveroom/Room/Leave <br/>
+> Content-Type: application/json <br/>
+> Authorization: Bearer (token) <br/>
+
+退出聊天室
+
+Request parameters
+
+|   Name    |   Type    |  Description |
+| --------- | --------- | ------------ |
+| room | string | 聊天室ID |
+
+Response is empty
 
 
 
