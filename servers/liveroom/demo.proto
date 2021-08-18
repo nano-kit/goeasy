@@ -8,8 +8,16 @@ service Demo {
 
 message HelloReq {
     string say = 1;
+    int32 sleep = 2;
 }
 
 message HelloRes {
     string ack = 1;
+    repeated KV account = 2;
+    float time = 3;
+}
+
+message KV {
+    string key = 1;
+    string value = 2;
 }
