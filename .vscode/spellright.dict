@@ -4,3 +4,4 @@ systemd
 logrotate
 Liveroom
 liveroom
+nats

@@ -8,6 +8,7 @@ import (
 	log "github.com/micro/go-micro/v2/logger"
 	"github.com/micro/go-micro/v2/server"
 	iconf "github.com/nano-kit/goeasy/internal/config"
+	"github.com/nats-io/nats.go"
 )
 
 const (
@@ -19,6 +20,9 @@ type Server struct {
 	Production         bool     `json:"production"`
 	LogOutputPaths     []string `json:"logging_output_paths"`
 	RedisServerAddress string   `json:"redis_server_address"`
+	NatsServerAddress  string   `json:"nats_server_address"`
+
+	natsConn *nats.Conn `json:"-"`
 }
 
 func NewServer() *Server {
@@ -45,18 +49,30 @@ func (s *Server) Run() {
 		Addr: s.RedisServerAddress,
 	})
 	if err := redisDB.Ping(context.Background()).Err(); err != nil {
-		log.Warnf("Ping redis: %v", err)
+		// log with info level because it can be reconnected later
+		log.Infof("Ping redis: %v", err)
 	}
-	defer redisDB.Close()
+
+	// connect to nats
+	var err error
+	s.natsConn, err = nats.Connect(s.NatsServerAddress, nats.Name(s.Name()))
+	if err != nil {
+		// log with info level because it can be reconnected later
+		log.Infof("Connect nats: %v", err)
+	}
 
 	// initialize the micro service
 	var srvOpts []micro.Option
-	srvOpts = append(srvOpts, micro.Name(s.Name()))
+	srvOpts = append(srvOpts,
+		micro.Name(s.Name()),
+		micro.BeforeStop(s.beforeStop),
+	)
 	service := micro.NewService(srvOpts...)
 
 	RegisterDemoHandler(service.Server(), new(Demo))
 	room := new(Room)
 	room.redisDB = redisDB
+	room.natsConn = s.natsConn
 	RegisterRoomHandler(service.Server(), room)
 	micro.RegisterSubscriber(s.Namespace+".topic.user-activity", service.Server(), room.onUserActivity,
 		server.SubscriberQueue(s.Name()))
@@ -65,4 +81,13 @@ func (s *Server) Run() {
 	if err := service.Run(); err != nil {
 		log.Fatal(err)
 	}
+
+	// close redis database
+	redisDB.Close()
+}
+
+func (s *Server) beforeStop() error {
+	// release all blocking calls, such as Flush() and NextMsg()
+	s.natsConn.Close()
+	return nil
 }

@@ -9,6 +9,7 @@ require (
 	github.com/golang/protobuf v1.5.2
 	github.com/gorilla/mux v1.7.3
 	github.com/micro/go-micro/v2 v2.9.1
+	github.com/nats-io/nats.go v1.11.0
 	github.com/stretchr/testify v1.7.0
 	golang.org/x/sys v0.0.0-20210615035016-665e8c7367d1
 )

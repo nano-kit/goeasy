@@ -5,10 +5,12 @@ import (
 
 	"github.com/go-redis/redis/v8"
 	"github.com/nano-kit/goeasy/internal/proto"
+	"github.com/nats-io/nats.go"
 )
 
 type Room struct {
-	redisDB *redis.Client
+	redisDB  *redis.Client
+	natsConn *nats.Conn
 }
 
 func (r *Room) Send(ctx context.Context, req *SendReq, res *SendRes) error {

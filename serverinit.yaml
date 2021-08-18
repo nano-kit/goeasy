@@ -2,6 +2,7 @@ namespace: io.goeasy
 api_serving_address: :8080
 redis_server_address: 127.0.0.1:6379
 mysql_server_address: 127.0.0.1:3306
+nats_server_address: 127.0.0.1:4222
 production: false
 logging_output_paths:
   - stdout
