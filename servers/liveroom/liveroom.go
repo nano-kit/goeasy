@@ -104,10 +104,11 @@ func (r *Room) saveRoomMessage(msg *RoomMessage) error {
 		return ierr.Storage("save room message: %v", err)
 	}
 	if add == 0 {
-		return ierr.Internal("duplicate message")
+		logger.Errorf("duplicate message: some message could be lost!")
+		err = ierr.Storage("duplicate message")
 	}
 	r.notifyNewRoomMessage(msg.Room)
-	return nil
+	return err
 }
 
 // readRoomMessage 读房间消息
