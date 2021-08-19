@@ -129,6 +129,7 @@ Attributes
 
 |   Name    |   Type    |  Description |
 | --------- | --------- | ------------ |
+| room | string | // 聊天室ID |
 | seq | uint64 | 聊天室里的每条消息都有唯一的seq，新消息的seq总是更大 |
 | type | [enum RoomMessage.Type](#enum-roommessagetype) | 消息类型 |
 | uid | string | 谁发出的消息 |

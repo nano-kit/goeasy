@@ -17,6 +17,12 @@ Liveroom 是一个无状态的服务。它依赖下面这些基础组件，
 
 简单起见，上图里的接入层、业务logicsvr、RecvSvr都在 Liveroom 里实现。“接入层”的处理在 Room.Recv handler，它向 redis 查询是否有新消息，这个查询请求可以重放。如果没有消息，将执行 SubscribeSync AutoUnsubscribe(1) NextMsg(time.Minute) 等待通知。上图里的 RoomX Waiting Queue 由 nats 提供。
 
+房间的消息列表，由用户在房间里的行为所产生。这里的“消息”是一个广泛的概念，包括但不限于“进入”“退出”“发送文字”等等。
+
+![SendUser](images/send.png)
+
+
+
 ## Reference 参考
 
 * [微信直播聊天室架构演进](https://mp.weixin.qq.com/s/poZo0uHl88n9TadBKUzFVA)

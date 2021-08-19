@@ -21,3 +21,8 @@ func BadRequest(format string, a ...interface{}) error {
 func Storage(format string, a ...interface{}) error {
 	return errors.New("E0100", fmt.Sprintf(format, a...), 550)
 }
+
+// Timeout is used with when timeout event happens
+func Timeout(format string, a ...interface{}) error {
+	return errors.New("E0101", fmt.Sprintf(format, a...), 551)
+}

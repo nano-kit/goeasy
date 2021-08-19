@@ -59,19 +59,21 @@ message RoomMessage {
         PLAIN_TEXT = 3; // 文本消息
     }
 
+    // // 聊天室ID
+    string room = 1;
     // 聊天室里的每条消息都有唯一的seq，新消息的seq总是更大
-    uint64 seq = 1;
+    uint64 seq = 2;
     // 消息类型
-    Type type = 2;
+    Type type = 3;
     // 谁发出的消息
-    string uid = 3;
+    string uid = 4;
     // 何时发出的消息（毫秒时间戳）
-    int64 send_at = 4;
+    int64 send_at = 5;
 
     // 具体消息对象，与消息类型对应
-    MsgEnterRoom enter_room = 5;
-    MsgLeaveRoom leave_room = 6;
-    MsgPlainText plain_text = 7;
+    MsgEnterRoom enter_room = 6;
+    MsgLeaveRoom leave_room = 7;
+    MsgPlainText plain_text = 8;
 }
 
 // 进入聊天室
