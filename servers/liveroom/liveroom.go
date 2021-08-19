@@ -3,6 +3,7 @@ package liveroom
 import (
 	"context"
 	"encoding/json"
+	math "math"
 	"strconv"
 	"text/template"
 	"time"
@@ -154,7 +155,7 @@ func (r *Room) waitForNewRoomMessage(room string, timeout time.Duration) error {
 	}
 	// Wait for a message
 	if _, err = sub.NextMsg(timeout); err == nats.ErrTimeout {
-		return ierr.Timeout("no new message for room %q after %v", room, timeout)
+		return ierr.Timeout("no new message for room %q after %vs", room, math.Round(timeout.Seconds()))
 	} else if err != nil {
 		return ierr.Internal("next message: %v", err)
 	}
