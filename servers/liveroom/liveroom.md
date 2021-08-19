@@ -56,7 +56,7 @@ Request parameters
 |   Name    |   Type    |  Description |
 | --------- | --------- | ------------ |
 | room | string | 聊天室ID |
-| msg | [object RoomMessage](#object-roommessage) | 本次发送的消息 |
+| text | string | 消息内容 |
 
 Response is empty
 

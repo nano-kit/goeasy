@@ -31,7 +31,7 @@ message LeaveRes {
 
 message SendReq {
     string room = 1; // 聊天室ID
-    RoomMessage msg = 2; // 本次发送的消息
+    string text = 2; // 消息内容
 }
 
 message SendRes {
