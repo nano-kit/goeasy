@@ -105,6 +105,7 @@ func (r *Room) saveRoomMessage(msg *RoomMessage) error {
 	if add == 0 {
 		return ierr.Internal("duplicate message")
 	}
+	r.notifyNewRoomMessage(msg.Room)
 	return nil
 }
 
@@ -158,6 +159,16 @@ func (r *Room) waitForNewRoomMessage(room string, timeout time.Duration) error {
 		return ierr.Internal("next message: %v", err)
 	}
 	return nil
+}
+
+// notifyNewRoomMessage 通知有新的房间消息
+func (r *Room) notifyNewRoomMessage(room string) {
+	if room == "" {
+		return
+	}
+	if err := r.natsConn.Publish(roomUpdateKey(room), nil); err != nil {
+		logger.Errorf("publish: %v", err)
+	}
 }
 
 func (r *Room) Send(ctx context.Context, req *SendReq, res *SendRes) error {
