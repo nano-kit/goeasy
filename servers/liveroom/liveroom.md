@@ -67,7 +67,7 @@ Response is empty
 > Content-Type: application/json <br/>
 > Authorization: Bearer (token) <br/>
 
-收取聊天室里的未读消息
+收取聊天室里的未读消息。 这是一个 long-polling 机制的方法，需要指定 `Request-Timeout` 头， 表示当聊天室里没有未读消息时，轮询多少秒。当聊天室里有未读消息时，立刻返回。
 
 Request parameters
 

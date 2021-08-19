@@ -46,7 +46,9 @@ type RoomService interface {
 	Enter(ctx context.Context, in *EnterReq, opts ...client.CallOption) (*EnterRes, error)
 	// 在聊天室里，发送消息
 	Send(ctx context.Context, in *SendReq, opts ...client.CallOption) (*SendRes, error)
-	// 收取聊天室里的未读消息
+	// 收取聊天室里的未读消息。
+	// 这是一个 long-polling 机制的方法，需要指定 `Request-Timeout` 头，
+	// 表示当聊天室里没有未读消息时，轮询多少秒。当聊天室里有未读消息时，立刻返回。
 	Recv(ctx context.Context, in *RecvReq, opts ...client.CallOption) (*RecvRes, error)
 	// 退出聊天室
 	Leave(ctx context.Context, in *LeaveReq, opts ...client.CallOption) (*LeaveRes, error)
@@ -111,7 +113,9 @@ type RoomHandler interface {
 	Enter(context.Context, *EnterReq, *EnterRes) error
 	// 在聊天室里，发送消息
 	Send(context.Context, *SendReq, *SendRes) error
-	// 收取聊天室里的未读消息
+	// 收取聊天室里的未读消息。
+	// 这是一个 long-polling 机制的方法，需要指定 `Request-Timeout` 头，
+	// 表示当聊天室里没有未读消息时，轮询多少秒。当聊天室里有未读消息时，立刻返回。
 	Recv(context.Context, *RecvReq, *RecvRes) error
 	// 退出聊天室
 	Leave(context.Context, *LeaveReq, *LeaveRes) error
