@@ -48,6 +48,7 @@ func validateText(text string) error {
 	return nil
 }
 
+// roomSequenceKey 保存房间的消息序列号生成器
 func roomSequenceKey(room string) string {
 	return "room:" + room + ":sequence"
 }
@@ -82,6 +83,7 @@ func (r *Room) maxSequence(room string) (max uint64, err error) {
 	return max, nil
 }
 
+// roomMessageKey 保存房间的消息列表
 func roomMessageKey(room string) string {
 	return "room:" + room + ":messages"
 }
@@ -135,6 +137,7 @@ func (r *Room) readRoomMessage(room string, min uint64) ([]*RoomMessage, error) 
 	return messages, nil
 }
 
+// roomUpdateKey 是房间消息有更新的 nats 主题
 func roomUpdateKey(room string) string {
 	return "room." + room + ".update"
 }
@@ -264,7 +267,7 @@ func (r *Room) Enter(ctx context.Context, req *EnterReq, res *EnterRes) error {
 	if err = r.saveRoomMessage(msg); err != nil {
 		return err
 	}
-	res.Uids, err = r.getRoomUsers(req.Room)
+	res.Uids, err = r.queryRoomUsers(req.Room)
 	return err
 }
 
@@ -323,6 +326,10 @@ func (r *Room) delRoomUser(room, user string) {
 	r.redisDB.ZRem(context.TODO(), userRoomKey(user), room)
 }
 
+const roomUserIdleDuration = 125 * time.Second
+
+const roomUserMaxQueryCount = 100
+
 func (r *Room) updateRoomUser(room, user string) {
 	if room == "" || user == "" {
 		return
@@ -334,24 +341,26 @@ func (r *Room) updateRoomUser(room, user string) {
 		Score:  float64(millisecond(now)),
 		Member: user,
 	})
+	r.redisDB.Expire(context.TODO(), roomUserKey(room), roomUserIdleDuration)
 	r.redisDB.ZAdd(context.TODO(), userRoomKey(user), &redis.Z{
 		Score:  float64(millisecond(now)),
 		Member: room,
 	})
+	r.redisDB.Expire(context.TODO(), userRoomKey(user), roomUserIdleDuration)
 
 	r.delStaleRoomUser(room, user)
 }
 
 func (r *Room) delStaleRoomUser(room, user string) {
-	maxTS := strconv.FormatInt(millisecond(time.Now().Add(-125*time.Second)), 10)
+	maxTS := strconv.FormatInt(millisecond(time.Now().Add(-roomUserIdleDuration)), 10)
 	r.redisDB.ZRemRangeByScore(context.TODO(), roomUserKey(room), "-inf", maxTS)
 	r.redisDB.ZRemRangeByScore(context.TODO(), userRoomKey(user), "-inf", maxTS)
 }
 
-func (r *Room) getRoomUsers(room string) (uids []string, err error) {
+func (r *Room) queryRoomUsers(room string) (uids []string, err error) {
 	return r.redisDB.ZRevRangeByScore(context.TODO(), roomUserKey(room), &redis.ZRangeBy{
 		Max:   "+inf",
 		Min:   "-inf",
-		Count: 100,
+		Count: roomUserMaxQueryCount,
 	}).Result()
 }
