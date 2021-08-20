@@ -3,7 +3,9 @@ syntax = "proto3";
 package liveuser;
 
 service User {
+    // 新增或更新用户信息
     rpc AddUser(AddUserReq) returns (AddUserRes);
+    // 查询用户信息
     rpc QueryUser(QueryUserReq) returns (QueryUserRes);
 }
 
@@ -22,10 +24,11 @@ message QueryUserRes {
     repeated UserRecord users = 1;
 }
 
+// UserRecord 是用户信息
 message UserRecord {
     string uid = 1; // 唯一ID
     string name = 2; // 姓名
     string agent = 3; // 终端
-    string email = 4; // 联系方式
+    string update_at = 4; // 更新时间(秒)
     string avatar = 5; // 头像
 }

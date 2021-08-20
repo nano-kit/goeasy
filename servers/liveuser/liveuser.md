@@ -22,7 +22,7 @@ Table of Contents
 > Content-Type: application/json <br/>
 > Authorization: Bearer (token) <br/>
 
-
+新增或更新用户信息
 
 Request parameters
 
@@ -39,7 +39,7 @@ Response is empty
 > Content-Type: application/json <br/>
 > Authorization: Bearer (token) <br/>
 
-
+查询用户信息
 
 Request parameters
 
@@ -63,7 +63,7 @@ Response parameters
 
 ### object UserRecord
 
-
+UserRecord 是用户信息
 
 Attributes
 
@@ -72,6 +72,6 @@ Attributes
 | uid | string | 唯一ID |
 | name | string | 姓名 |
 | agent | string | 终端 |
-| email | string | 联系方式 |
+| update_at | string | 更新时间(秒) |
 | avatar | string | 头像 |
 

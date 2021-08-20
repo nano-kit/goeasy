@@ -42,7 +42,9 @@ func NewUserEndpoints() []*api.Endpoint {
 // Client API for User service
 
 type UserService interface {
+	// 新增或更新用户信息
 	AddUser(ctx context.Context, in *AddUserReq, opts ...client.CallOption) (*AddUserRes, error)
+	// 查询用户信息
 	QueryUser(ctx context.Context, in *QueryUserReq, opts ...client.CallOption) (*QueryUserRes, error)
 }
 
@@ -81,7 +83,9 @@ func (c *userService) QueryUser(ctx context.Context, in *QueryUserReq, opts ...c
 // Server API for User service
 
 type UserHandler interface {
+	// 新增或更新用户信息
 	AddUser(context.Context, *AddUserReq, *AddUserRes) error
+	// 查询用户信息
 	QueryUser(context.Context, *QueryUserReq, *QueryUserRes) error
 }
 
