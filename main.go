@@ -14,6 +14,7 @@ import (
 	iconf "github.com/nano-kit/goeasy/internal/config"
 	"github.com/nano-kit/goeasy/internal/reexec"
 	"github.com/nano-kit/goeasy/servers/liveroom"
+	liveuser "github.com/nano-kit/goeasy/servers/liveuser/impl"
 )
 
 type serverName string
@@ -30,7 +31,7 @@ var (
 		{server: comet.NewServer()},
 		//{server: sequence.NewServer()},
 		{server: liveroom.NewServer()},
-		//{server: liveuser.NewServer()},
+		{server: liveuser.NewServer()},
 	}
 )
 

@@ -2,3 +2,30 @@ syntax = "proto3";
 
 package liveuser;
 
+service User {
+    rpc AddUser(AddUserReq) returns (AddUserRes);
+    rpc QueryUser(QueryUserReq) returns (QueryUserRes);
+}
+
+message AddUserReq {
+    UserRecord user = 1;
+}
+
+message AddUserRes {
+}
+
+message QueryUserReq {
+    repeated string uids = 1;
+}
+
+message QueryUserRes {
+    repeated UserRecord users = 1;
+}
+
+message UserRecord {
+    string uid = 1; // 唯一ID
+    string name = 2; // 姓名
+    string agent = 3; // 终端
+    string email = 4; // 联系方式
+    string avatar = 5; // 头像
+}
