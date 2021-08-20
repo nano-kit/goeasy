@@ -216,6 +216,8 @@ func (r *Room) Recv(ctx context.Context, req *RecvReq, res *RecvRes) error {
 	if err != nil {
 		return err
 	}
+	// 更新用户心跳
+	r.updateRoomUser(req.Room, acc.ID)
 	// 有新消息
 	if req.LastSeq < max {
 		res.Msgs, err = r.readRoomMessage(req.Room, req.LastSeq+1)
@@ -244,7 +246,7 @@ func (r *Room) Enter(ctx context.Context, req *EnterReq, res *EnterRes) error {
 	if !ok {
 		return ierr.BadRequest("no account")
 	}
-	if err := validateRoom(acc.ID, req.Room); err != nil {
+	if err := r.addRoomUser(req.Room, acc.ID); err != nil {
 		return err
 	}
 	seq, err := r.nextSequence(req.Room)
@@ -259,7 +261,10 @@ func (r *Room) Enter(ctx context.Context, req *EnterReq, res *EnterRes) error {
 		SendAt:    millisecond(start),
 		EnterRoom: &MsgEnterRoom{},
 	}
-	err = r.saveRoomMessage(msg)
+	if err = r.saveRoomMessage(msg); err != nil {
+		return err
+	}
+	res.Uids, err = r.getRoomUsers(req.Room)
 	return err
 }
 
@@ -272,6 +277,7 @@ func (r *Room) Leave(ctx context.Context, req *LeaveReq, res *LeaveRes) error {
 	if err := validateRoom(acc.ID, req.Room); err != nil {
 		return err
 	}
+	r.delRoomUser(req.Room, acc.ID)
 	seq, err := r.nextSequence(req.Room)
 	if err != nil {
 		return err
@@ -286,4 +292,66 @@ func (r *Room) Leave(ctx context.Context, req *LeaveReq, res *LeaveRes) error {
 	}
 	err = r.saveRoomMessage(msg)
 	return err
+}
+
+// roomUserKey 记录关注这个房间的用户
+func roomUserKey(room string) string {
+	return "room:" + room + ":users"
+}
+
+// userRoomKey 记录用户在关注哪个房间
+func userRoomKey(user string) string {
+	return "user:" + user + ":rooms"
+}
+
+func (r *Room) addRoomUser(room, user string) error {
+	if room == "" || user == "" {
+		return ierr.BadRequest("empty identity")
+	}
+
+	r.updateRoomUser(room, user)
+
+	return nil
+}
+
+func (r *Room) delRoomUser(room, user string) {
+	if room == "" || user == "" {
+		return
+	}
+
+	r.redisDB.ZRem(context.TODO(), roomUserKey(room), user)
+	r.redisDB.ZRem(context.TODO(), userRoomKey(user), room)
+}
+
+func (r *Room) updateRoomUser(room, user string) {
+	if room == "" || user == "" {
+		return
+	}
+
+	now := time.Now()
+
+	r.redisDB.ZAdd(context.TODO(), roomUserKey(room), &redis.Z{
+		Score:  float64(millisecond(now)),
+		Member: user,
+	})
+	r.redisDB.ZAdd(context.TODO(), userRoomKey(user), &redis.Z{
+		Score:  float64(millisecond(now)),
+		Member: room,
+	})
+
+	r.delStaleRoomUser(room, user)
+}
+
+func (r *Room) delStaleRoomUser(room, user string) {
+	maxTS := strconv.FormatInt(millisecond(time.Now().Add(-125*time.Second)), 10)
+	r.redisDB.ZRemRangeByScore(context.TODO(), roomUserKey(room), "-inf", maxTS)
+	r.redisDB.ZRemRangeByScore(context.TODO(), userRoomKey(user), "-inf", maxTS)
+}
+
+func (r *Room) getRoomUsers(room string) (uids []string, err error) {
+	return r.redisDB.ZRevRangeByScore(context.TODO(), roomUserKey(room), &redis.ZRangeBy{
+		Max:   "+inf",
+		Min:   "-inf",
+		Count: 100,
+	}).Result()
 }
