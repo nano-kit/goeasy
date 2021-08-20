@@ -151,6 +151,7 @@ func (r *Room) waitForNewRoomMessage(room string, timeout time.Duration) error {
 	if err != nil {
 		return ierr.Internal("subscribe: %v", err)
 	}
+	defer sub.Unsubscribe()
 	if err := sub.AutoUnsubscribe(1); err != nil {
 		return ierr.Internal("auto unsubscribe: %v", err)
 	}
