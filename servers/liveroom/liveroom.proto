@@ -18,6 +18,7 @@ service Room {
 
 message EnterReq {
     string room = 1; // 聊天室ID
+    MsgEnterRoom info = 2; // 附加信息
 }
 
 message EnterRes {
@@ -80,6 +81,11 @@ message RoomMessage {
 
 // 进入聊天室
 message MsgEnterRoom {
+    string name = 1; // 姓名
+    string agent = 2; // 终端
+    string avatar = 3; // 头像
+    string ipaddr = 4; // IP地址
+    string location = 5; // 位置
 }
 
 // 退出聊天室

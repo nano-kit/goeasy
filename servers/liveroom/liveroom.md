@@ -35,6 +35,7 @@ Request parameters
 |   Name    |   Type    |  Description |
 | --------- | --------- | ------------ |
 | room | string | 聊天室ID |
+| info | [object MsgEnterRoom](#object-msgenterroom) | 附加信息 |
 
 Response parameters
 
@@ -143,7 +144,15 @@ Attributes
 
 进入聊天室
 
-It has no attributes
+Attributes
+
+|   Name    |   Type    |  Description |
+| --------- | --------- | ------------ |
+| name | string | 姓名 |
+| agent | string | 终端 |
+| avatar | string | 头像 |
+| ipaddr | string | IP地址 |
+| location | string | 位置 |
 
 
 ### object MsgLeaveRoom
