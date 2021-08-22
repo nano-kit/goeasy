@@ -110,6 +110,7 @@ func (r *Room) saveRoomMessage(msg *RoomMessage) error {
 		err = ierr.Storage("duplicate message")
 	}
 	r.notifyNewRoomMessage(msg.Room)
+	r.delStaleRoomMessage(msg.Room)
 	return err
 }
 
@@ -355,6 +356,10 @@ func (r *Room) delStaleRoomUser(room, user string) {
 	maxTS := strconv.FormatInt(millisecond(time.Now().Add(-roomUserIdleDuration)), 10)
 	r.redisDB.ZRemRangeByScore(context.TODO(), roomUserKey(room), "-inf", maxTS)
 	r.redisDB.ZRemRangeByScore(context.TODO(), userRoomKey(user), "-inf", maxTS)
+}
+
+func (r *Room) delStaleRoomMessage(room string) {
+	r.redisDB.ZRemRangeByRank(context.TODO(), roomMessageKey(room), 0, -1001)
 }
 
 func (r *Room) queryRoomUsers(room string) (uids []string, err error) {
