@@ -64,7 +64,7 @@ func (a authWrapper) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	// account doesn't necesserially mean a forbidden request
 	acc, err := a.auth.Inspect(token)
 	if logger.V(logger.DebugLevel, logger.DefaultLogger) {
-		logger.Debugf("inspect: auth=[%v], namespace=%s, token=%q, account=%+v, err=%v", a.auth, ns, token, acc, err)
+		logger.Debugf("inspect %q: auth=[%v], namespace=%s, token=%q, account=%+v, err=%v", req.URL.Path, a.auth, ns, token, acc, err)
 	}
 
 	// Ensure the accounts issuer matches the namespace being requested

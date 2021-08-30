@@ -24,6 +24,7 @@ import (
 const (
 	ServiceName = "gate"
 	APIPath     = "/"
+	PortalPath  = "/portal/"
 )
 
 type Server struct {
@@ -87,6 +88,8 @@ func (s *Server) Run() {
 	})
 	// strip favicon.ico
 	muxRouter.HandleFunc("/favicon.ico", func(w http.ResponseWriter, r *http.Request) {})
+	// serve the portal static files
+	muxRouter.PathPrefix(PortalPath).Handler(http.StripPrefix(PortalPath, http.FileServer(http.Dir("portal"))))
 
 	// create the namespace resolver
 	nsResolver := namespace.NewResolver("service", s.Namespace)

@@ -112,3 +112,64 @@ func (h *userHandler) AddUser(ctx context.Context, in *AddUserReq, out *AddUserR
 func (h *userHandler) QueryUser(ctx context.Context, in *QueryUserReq, out *QueryUserRes) error {
 	return h.UserHandler.QueryUser(ctx, in, out)
 }
+
+// Api Endpoints for Wx service
+
+func NewWxEndpoints() []*api.Endpoint {
+	return []*api.Endpoint{}
+}
+
+// Client API for Wx service
+
+type WxService interface {
+	// 客户端调用 wx.login() 获取临时登录凭证 code ，用此接口回传到开发者服务器。
+	Login(ctx context.Context, in *LoginReq, opts ...client.CallOption) (*LoginRes, error)
+}
+
+type wxService struct {
+	c    client.Client
+	name string
+}
+
+func NewWxService(name string, c client.Client) WxService {
+	return &wxService{
+		c:    c,
+		name: name,
+	}
+}
+
+func (c *wxService) Login(ctx context.Context, in *LoginReq, opts ...client.CallOption) (*LoginRes, error) {
+	req := c.c.NewRequest(c.name, "Wx.Login", in)
+	out := new(LoginRes)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// Server API for Wx service
+
+type WxHandler interface {
+	// 客户端调用 wx.login() 获取临时登录凭证 code ，用此接口回传到开发者服务器。
+	Login(context.Context, *LoginReq, *LoginRes) error
+}
+
+func RegisterWxHandler(s server.Server, hdlr WxHandler, opts ...server.HandlerOption) error {
+	type wx interface {
+		Login(ctx context.Context, in *LoginReq, out *LoginRes) error
+	}
+	type Wx struct {
+		wx
+	}
+	h := &wxHandler{hdlr}
+	return s.Handle(s.NewHandler(&Wx{h}, opts...))
+}
+
+type wxHandler struct {
+	WxHandler
+}
+
+func (h *wxHandler) Login(ctx context.Context, in *LoginReq, out *LoginRes) error {
+	return h.WxHandler.Login(ctx, in, out)
+}
