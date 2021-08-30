@@ -9,6 +9,7 @@ import (
 
 	log "github.com/micro/go-micro/v2/logger"
 	signalutil "github.com/micro/go-micro/v2/util/signal"
+	"github.com/nano-kit/goeasy/auth"
 	"github.com/nano-kit/goeasy/comet"
 	"github.com/nano-kit/goeasy/gate"
 	iconf "github.com/nano-kit/goeasy/internal/config"
@@ -27,6 +28,7 @@ var (
 	runAs serverName
 
 	servers = []serverRecord{
+		{server: auth.NewServer()},
 		{server: gate.NewServer()},
 		{server: comet.NewServer()},
 		//{server: sequence.NewServer()},

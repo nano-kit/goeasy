@@ -10,19 +10,23 @@ import (
 	"github.com/micro/go-micro/v2/api/resolver"
 	"github.com/micro/go-micro/v2/api/server"
 	"github.com/micro/go-micro/v2/auth"
+	"github.com/micro/go-micro/v2/client"
 	"github.com/micro/go-micro/v2/logger"
 	"github.com/micro/go-micro/v2/util/ctx"
+	asvc "github.com/nano-kit/goeasy/gate/auth/service"
+	iauth "github.com/nano-kit/goeasy/internal/auth"
 	"github.com/nano-kit/goeasy/internal/namespace"
 )
 
 // Wrapper wraps a handler and authenticates requests
-func Wrapper(r resolver.Resolver, nr *namespace.Resolver) server.Wrapper {
+func Wrapper(r resolver.Resolver, nr *namespace.Resolver, c client.Client) server.Wrapper {
 	return func(h http.Handler) http.Handler {
 		return authWrapper{
 			handler:    h,
 			resolver:   r,
 			nsResolver: nr,
-			auth:       &jwt{},
+			//auth:       &jwt{},
+			auth: asvc.NewAuth(auth.Namespace(nr.Namespace()), auth.WithClient(c)),
 		}
 	}
 }
@@ -41,9 +45,6 @@ func (a authWrapper) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		ns = a.nsResolver.Resolve(req)
 		req.Header.Set(namespace.NamespaceKey, ns)
 	}
-
-	// Set the metadata so we can access it in micro api / web
-	req = req.WithContext(ctx.FromRequest(req))
 
 	// Extract the token from the request
 	var token string
@@ -72,6 +73,15 @@ func (a authWrapper) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		http.Error(w, "Account was not issued by "+ns, http.StatusForbidden)
 		return
 	}
+
+	// Convert the auth token to an internal token
+	if acc != nil {
+		internalToken := iauth.AccountToToken(acc)
+		req.Header.Set("Authorization", auth.BearerScheme+internalToken)
+	}
+
+	// Set the metadata so we can access it in micro api / web
+	req = req.WithContext(ctx.FromRequest(req))
 
 	// Determine the name of the service being requested
 	endpoint, err := a.resolver.Resolve(req)

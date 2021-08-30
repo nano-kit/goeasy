@@ -29,3 +29,7 @@ func (r Resolver) Resolve(req *http.Request) string {
 
 	panic("the domain resolver is not ready")
 }
+
+func (r Resolver) Namespace() string {
+	return r.namespace
+}

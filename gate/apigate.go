@@ -108,7 +108,7 @@ func (s *Server) Run() {
 	muxRouter.PathPrefix(APIPath).Handler(handler.Meta(service, rt, nsResolver.ResolveWithType))
 
 	// create the auth wrapper and the server
-	authWrapper := auth.Wrapper(rr, nsResolver)
+	authWrapper := auth.Wrapper(rr, nsResolver, service.Client())
 	gate := httpapi.NewServer(s.Address, server.WrapHandler(authWrapper))
 	gate.Init(opts...)
 	gate.Handle("/", httpHandler)
