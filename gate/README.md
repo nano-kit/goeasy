@@ -49,3 +49,15 @@ Versioned API URLs can easily be mapped to service names:
 | /v1/foo/bar/baz | io.goeasy.service.v1.foo | Bar.Baz |
 | /v2/foo/bar     | io.goeasy.service.v2.foo | Foo.Bar |
 | /v2/foo/bar/baz | io.goeasy.service.v2.foo | Bar.Baz |
+
+## Exceptions
+
+In *goeasy* ecosystem, the *gate* is not only the API Gateway. As the *gate* is the only entrance for external requests, besides RESTful API, it also serves static web pages and HTTP GET (for example, an OAuth 2 Redirect URI or Callback URL).
+
+Currently following paths are reserved by the resolver for static web pages:
+
+* The root path `/`
+* `/favicon.ico`
+* `/portal`
+
+HTTP GET can be handled by backend service. The query string is converted to JSON by [qson](https://github.com/nano-kit/go-micro/tree/main/util/qson).
