@@ -191,7 +191,7 @@ func serializeToken(t *pb.Token) *auth.Token {
 func serializeAccount(a *pb.Account) *auth.Account {
 	return &auth.Account{
 		ID:       a.Id,
-		Secret:   a.Secret,
+		Type:     a.Type,
 		Issuer:   a.Issuer,
 		Metadata: a.Metadata,
 		Scopes:   a.Scopes,
