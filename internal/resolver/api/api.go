@@ -15,6 +15,16 @@ type Resolver struct {
 }
 
 func (r *Resolver) Resolve(req *http.Request) (*resolver.Endpoint, error) {
+	// resolve as web handler
+	switch req.URL.Path {
+	case
+		"", "/",
+		"/favicon.ico",
+		"/portal", "/portal/":
+		return nil, resolver.ErrInvalidPath
+	}
+
+	// resolve as api handler
 	var name, method string
 
 	switch r.Options.Handler {
@@ -34,7 +44,7 @@ func (r *Resolver) Resolve(req *http.Request) (*resolver.Endpoint, error) {
 }
 
 func (r *Resolver) String() string {
-	return "micro"
+	return "goeasy"
 }
 
 // NewResolver creates a new micro resolver
