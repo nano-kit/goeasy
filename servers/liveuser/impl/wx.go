@@ -10,6 +10,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/micro/go-micro/v2/debug/trace"
 	"github.com/micro/go-micro/v2/logger"
 	"github.com/nano-kit/goeasy/internal/ierr"
 	ijson "github.com/nano-kit/goeasy/internal/json"
@@ -54,7 +55,7 @@ func (w *Wx) authCode2Session(code string) (ses SessionResponse, err error) {
 	targetAddress := "https://api.weixin.qq.com/sns/jscode2session"
 	req, err := http.NewRequest("GET", targetAddress, nil)
 	if err != nil {
-		logger.Warn(err)
+		err = fmt.Errorf("http.NewRequest: %w", err)
 		return
 	}
 
@@ -67,37 +68,40 @@ func (w *Wx) authCode2Session(code string) (ses SessionResponse, err error) {
 
 	resp, err := w.httpClient.Do(req)
 	if err != nil {
-		logger.Warn(err)
+		err = fmt.Errorf("httpClient.Do: %w", err)
 		return
 	}
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		logger.Warn(err)
+		err = fmt.Errorf("ioutil.ReadAll: %w", err)
 		return
 	}
 	if err = json.Unmarshal(body, &ses); err != nil {
-		logger.Warn(err)
+		err = fmt.Errorf("json.Unmarshal: %w", err)
 		return
 	}
 	if ses.ErrCode != 0 {
 		err = fmt.Errorf("auth.code2Session: errcode(%v) %v", ses.ErrCode, ses.ErrMsg)
-		logger.Warn(err)
 		return
 	}
 	return
 }
 
 func (w *Wx) Login(ctx context.Context, req *liveuser.LoginReq, res *liveuser.LoginRes) error {
+	traceID, _, _ := trace.FromContext(ctx)
+	logger := logger.NewHelper(logger.Fields(map[string]interface{}{"trace-id": traceID}))
 	logger.Infof("got wx.login request: %v", ijson.Stringify(req))
 	if req.Code == "" {
-		err := ierr.BadRequest("empty code")
+		err := ierr.BadRequest("empty code, tid: %v", traceID)
 		logger.Warn(err)
 		return err
 	}
 	ses, err := w.authCode2Session(req.Code)
 	if err != nil {
-		return ierr.BadRequest("wx.login: %v", err)
+		err := ierr.BadRequest("wx.login: %v, tid: %v", err, traceID)
+		logger.Warn(err)
+		return err
 	}
 	logger.Infof("got session: %v", ijson.Stringify(ses))
 	return nil
