@@ -60,7 +60,7 @@ func (s *Server) Run() {
 	user.redisDB = redisDB
 	liveuser.RegisterUserHandler(service.Server(), user)
 	wx := new(Wx)
-	wx.Init()
+	wx.Init(service, s.Namespace)
 	liveuser.RegisterWxHandler(service.Server(), wx)
 	micro.RegisterSubscriber(s.Namespace+".topic.user-activity", service.Server(), user.onUserActivity,
 		server.SubscriberQueue(s.Name()))

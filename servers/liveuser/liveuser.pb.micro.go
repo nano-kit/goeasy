@@ -123,7 +123,10 @@ func NewWxEndpoints() []*api.Endpoint {
 
 type WxService interface {
 	// 客户端调用 wx.login() 获取临时登录凭证 code ，用此接口回传到开发者服务器。
+	// 开发者服务器处理之后，返回开发者服务器的自定义登录态。
 	Login(ctx context.Context, in *LoginReq, opts ...client.CallOption) (*LoginRes, error)
+	// 开发者服务器的自定义登录态里的 access_token 到期之前，用此接口获取新的 access_token。
+	RefreshToken(ctx context.Context, in *RefreshTokenReq, opts ...client.CallOption) (*RefreshTokenRes, error)
 }
 
 type wxService struct {
@@ -148,16 +151,30 @@ func (c *wxService) Login(ctx context.Context, in *LoginReq, opts ...client.Call
 	return out, nil
 }
 
+func (c *wxService) RefreshToken(ctx context.Context, in *RefreshTokenReq, opts ...client.CallOption) (*RefreshTokenRes, error) {
+	req := c.c.NewRequest(c.name, "Wx.RefreshToken", in)
+	out := new(RefreshTokenRes)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Server API for Wx service
 
 type WxHandler interface {
 	// 客户端调用 wx.login() 获取临时登录凭证 code ，用此接口回传到开发者服务器。
+	// 开发者服务器处理之后，返回开发者服务器的自定义登录态。
 	Login(context.Context, *LoginReq, *LoginRes) error
+	// 开发者服务器的自定义登录态里的 access_token 到期之前，用此接口获取新的 access_token。
+	RefreshToken(context.Context, *RefreshTokenReq, *RefreshTokenRes) error
 }
 
 func RegisterWxHandler(s server.Server, hdlr WxHandler, opts ...server.HandlerOption) error {
 	type wx interface {
 		Login(ctx context.Context, in *LoginReq, out *LoginRes) error
+		RefreshToken(ctx context.Context, in *RefreshTokenReq, out *RefreshTokenRes) error
 	}
 	type Wx struct {
 		wx
@@ -172,4 +189,8 @@ type wxHandler struct {
 
 func (h *wxHandler) Login(ctx context.Context, in *LoginReq, out *LoginRes) error {
 	return h.WxHandler.Login(ctx, in, out)
+}
+
+func (h *wxHandler) RefreshToken(ctx context.Context, in *RefreshTokenReq, out *RefreshTokenRes) error {
+	return h.WxHandler.RefreshToken(ctx, in, out)
 }

@@ -10,6 +10,10 @@ import (
 	"os"
 	"time"
 
+	"github.com/google/uuid"
+	"github.com/micro/go-micro/v2"
+	pb "github.com/micro/go-micro/v2/auth/service/proto"
+	"github.com/micro/go-micro/v2/client"
 	"github.com/micro/go-micro/v2/debug/trace"
 	"github.com/micro/go-micro/v2/logger"
 	"github.com/nano-kit/goeasy/internal/ierr"
@@ -18,12 +22,13 @@ import (
 )
 
 type Wx struct {
-	httpClient *http.Client
-	appID      string // 小程序 appId
-	secret     string // 小程序 appSecret
+	httpClient  *http.Client
+	microClient client.Client
+	appID       string // 小程序 appId
+	secret      string // 小程序 appSecret
 }
 
-func (w *Wx) Init() {
+func (w *Wx) Init(serivce micro.Service, namespace string) {
 	w.httpClient = &http.Client{
 		Transport: &http.Transport{
 			DialContext: (&net.Dialer{
@@ -35,6 +40,10 @@ func (w *Wx) Init() {
 			MaxConnsPerHost:     10,
 		},
 		Timeout: 2 * time.Second,
+	}
+	w.microClient = &clientWrapper{
+		Client:    serivce.Client(),
+		namespace: namespace,
 	}
 	w.appID = os.Getenv("WX_APP_ID")
 	w.secret = os.Getenv("WX_APP_SECRET")
@@ -104,5 +113,66 @@ func (w *Wx) Login(ctx context.Context, req *liveuser.LoginReq, res *liveuser.Lo
 		return err
 	}
 	logger.Infof("got session: %v", ijson.Stringify(ses))
+
+	// 自定义登录态
+	acc, err := w.createOrUpdateUserAccount(ctx, ses)
+	if err != nil {
+		err := ierr.Storage("createOrUpdateUserAccount: %v, tid: %v", err, traceID)
+		logger.Warn(err)
+		return err
+	}
+	accToken, err := w.generateUserAccountToken(ctx, acc)
+	if err != nil {
+		err := ierr.Storage("generateUserAccountToken: %v, tid: %v", err, traceID)
+		logger.Warn(err)
+		return err
+	}
+	res.AccessToken = accToken.AccessToken
+	res.RefreshToken = accToken.RefreshToken
+	res.Expiry = accToken.Expiry
 	return nil
+}
+
+func (w *Wx) RefreshToken(ctx context.Context, req *liveuser.RefreshTokenReq, res *liveuser.RefreshTokenRes) error {
+	authSrv := pb.NewAuthService("go.micro.auth", w.microClient)
+	tokenRes, err := authSrv.Token(ctx, &pb.TokenRequest{
+		RefreshToken: req.RefreshToken,
+	})
+	if err != nil {
+		err := ierr.Storage("authSrv.Token: %v", err)
+		logger.Warn(err)
+		return err
+	}
+	res.AccessToken = tokenRes.GetToken().GetAccessToken()
+	return nil
+}
+
+func (w *Wx) createOrUpdateUserAccount(ctx context.Context, ses SessionResponse) (*pb.Account, error) {
+	authSrv := pb.NewAuthService("go.micro.auth", w.microClient)
+	res, err := authSrv.Generate(ctx, &pb.GenerateRequest{
+		Id: ses.OpenID,
+		Metadata: map[string]string{
+			"session_key": ses.SessionKey,
+		},
+		Scopes:   []string{"normal"},
+		Provider: "oauth",
+		Type:     "user",
+		Secret:   uuid.NewString(),
+	})
+	if err != nil {
+		return nil, err
+	}
+	return res.GetAccount(), nil
+}
+
+func (w *Wx) generateUserAccountToken(ctx context.Context, acc *pb.Account) (*pb.Token, error) {
+	authSrv := pb.NewAuthService("go.micro.auth", w.microClient)
+	res, err := authSrv.Token(ctx, &pb.TokenRequest{
+		Id:     acc.Id,
+		Secret: acc.Secret,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return res.GetToken(), nil
 }

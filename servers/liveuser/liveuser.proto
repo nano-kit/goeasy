@@ -11,7 +11,10 @@ service User {
 
 service Wx {
     // 客户端调用 wx.login() 获取临时登录凭证 code ，用此接口回传到开发者服务器。
+    // 开发者服务器处理之后，返回开发者服务器的自定义登录态。
     rpc Login(LoginReq) returns (LoginRes);
+    // 开发者服务器的自定义登录态里的 access_token 到期之前，用此接口获取新的 access_token。
+    rpc RefreshToken(RefreshTokenReq) returns (RefreshTokenRes);
 }
 
 message AddUserReq {
@@ -45,4 +48,15 @@ message LoginReq {
 }
 
 message LoginRes {
+    string access_token = 1;
+	string refresh_token = 2;
+	int64 expiry = 3;
+}
+
+message RefreshTokenReq {
+    string refresh_token = 1;
+}
+
+message RefreshTokenRes {
+    string access_token = 1;
 }

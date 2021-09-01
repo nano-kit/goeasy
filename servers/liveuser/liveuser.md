@@ -7,6 +7,7 @@ Table of Contents
     * [Method User.QueryUser](#method-userqueryuser)
 * [Service Wx](#service-wx)
     * [Method Wx.Login](#method-wxlogin)
+    * [Method Wx.RefreshToken](#method-wxrefreshtoken)
 * [Enums](#enums)
 * [Objects](#objects)
     * [Object UserRecord](#object-userrecord)
@@ -69,7 +70,7 @@ Response parameters
 > Content-Type: application/json <br/>
 > Authorization: Bearer (token) <br/>
 
-客户端调用 wx.login() 获取临时登录凭证 code ，用此接口回传到开发者服务器。
+客户端调用 wx.login() 获取临时登录凭证 code ，用此接口回传到开发者服务器。 开发者服务器处理之后，返回开发者服务器的自定义登录态。
 
 Request parameters
 
@@ -77,7 +78,34 @@ Request parameters
 | --------- | --------- | ------------ |
 | code | string | 用户登录凭证（有效期五分钟）。开发者需要在开发者服务器后台调用 auth.code2Session， 使用 code 换取 openid、unionid、session_key 等信息 |
 
-Response is empty
+Response parameters
+
+|   Name    |   Type    |  Description |
+| --------- | --------- | ------------ |
+| access_token | string |  |
+| refresh_token | string |  |
+| expiry | int64 |  |
+
+
+### Method Wx.RefreshToken
+
+> POST /liveuser/Wx/RefreshToken <br/>
+> Content-Type: application/json <br/>
+> Authorization: Bearer (token) <br/>
+
+开发者服务器的自定义登录态里的 access_token 到期之前，用此接口获取新的 access_token。
+
+Request parameters
+
+|   Name    |   Type    |  Description |
+| --------- | --------- | ------------ |
+| refresh_token | string |  |
+
+Response parameters
+
+|   Name    |   Type    |  Description |
+| --------- | --------- | ------------ |
+| access_token | string |  |
 
 
 
