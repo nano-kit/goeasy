@@ -63,7 +63,7 @@ func (a authWrapper) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 
 	// Get the account using the token, some are unauthenticated, so the lack of an
 	// account doesn't necesserially mean a forbidden request
-	acc, err := a.auth.Inspect(token)
+	acc, err := a.auth.Inspect(token, auth.InspectContext(req.Context()))
 	if logger.V(logger.DebugLevel, logger.DefaultLogger) {
 		logger.Debugf("inspect %q: auth=[%v], namespace=%s, token=%q, account=%+v, err=%v", req.URL.Path, a.auth, ns, token, acc, err)
 	}

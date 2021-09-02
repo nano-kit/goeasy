@@ -26,7 +26,6 @@
 
 ## 增加用户
 
-
 创建一个新用户，ID 是 user001，设定其访问范围是 normal。
 
     micro auth create account --secret 123456 --scopes normal user001

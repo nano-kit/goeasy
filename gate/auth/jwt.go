@@ -57,6 +57,6 @@ func (j *jwt) Verify(acc *microauth.Account, res *microauth.Resource, opts ...mi
 	return nil
 }
 
-func (j *jwt) Inspect(token string) (*microauth.Account, error) {
+func (j *jwt) Inspect(token string, opts ...microauth.InspectOption) (*microauth.Account, error) {
 	return iauth.AccountFromToken(token)
 }
