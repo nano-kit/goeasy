@@ -20,6 +20,7 @@ func (r *Resolver) Resolve(req *http.Request) (*resolver.Endpoint, error) {
 	case
 		"", "/",
 		"/favicon.ico",
+		"/metrics",
 		"/portal", "/portal/":
 		return nil, resolver.ErrInvalidPath
 	}

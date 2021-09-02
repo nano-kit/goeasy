@@ -14,11 +14,16 @@ import (
 	httpapi "github.com/micro/go-micro/v2/api/server/http"
 	log "github.com/micro/go-micro/v2/logger"
 	"github.com/nano-kit/goeasy/gate/auth"
+	"github.com/nano-kit/goeasy/gate/metric"
 	iconf "github.com/nano-kit/goeasy/internal/config"
 	"github.com/nano-kit/goeasy/internal/handler"
 	"github.com/nano-kit/goeasy/internal/namespace"
 	"github.com/nano-kit/goeasy/internal/resolver/api"
 	"github.com/nano-kit/goeasy/internal/rlimit"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+	metrics "github.com/slok/go-http-metrics/metrics/prometheus"
+	"github.com/slok/go-http-metrics/middleware"
+	"github.com/slok/go-http-metrics/middleware/std"
 )
 
 const (
@@ -62,6 +67,7 @@ func (s *Server) Run() {
 	// initialize the micro service
 	var srvOpts []micro.Option
 	srvOpts = append(srvOpts, micro.Name(s.Name()))
+	srvOpts = append(srvOpts, micro.WrapClient(metric.NewClientWrapper()))
 	service := micro.NewService(srvOpts...)
 
 	// initialize the API gate server
@@ -90,6 +96,8 @@ func (s *Server) Run() {
 	muxRouter.HandleFunc("/favicon.ico", func(w http.ResponseWriter, r *http.Request) {})
 	// serve the portal static files
 	muxRouter.PathPrefix(PortalPath).Handler(http.StripPrefix(PortalPath, http.FileServer(http.Dir("portal"))))
+	// serve the metrics
+	muxRouter.Handle("/metrics", promhttp.Handler())
 
 	// create the namespace resolver
 	nsResolver := namespace.NewResolver("service", s.Namespace)
@@ -105,7 +113,12 @@ func (s *Server) Run() {
 		router.WithResolver(rr),
 		router.WithRegistry(service.Options().Registry),
 	)
-	muxRouter.PathPrefix(APIPath).Handler(handler.Meta(service, rt, nsResolver.ResolveWithType))
+	metaHandler := handler.Meta(service, rt, nsResolver.ResolveWithType)
+	mdlw := middleware.New(middleware.Config{
+		Recorder: metrics.NewRecorder(metrics.Config{}),
+	})
+	instrumentedMetaHandler := std.Handler("api", mdlw, metaHandler)
+	muxRouter.PathPrefix(APIPath).Handler(instrumentedMetaHandler)
 
 	// create the auth wrapper and the server
 	authWrapper := auth.Wrapper(rr, nsResolver, service.Client())
