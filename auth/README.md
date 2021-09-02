@@ -2,6 +2,10 @@
 
 认证服务，存储和管理账号、规则(RBAC)。
 
+首先需要切换名字空间
+
+    micro login --namespace io.goeasy default password
+
 ## 查看权限规则
 
     micro auth list rules

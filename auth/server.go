@@ -41,6 +41,9 @@ func (s *Server) Run() {
 		log.SetOption("color", !s.Production),
 	)
 
+	// set the auth namespace
+	auth.DefaultAuth.Init(auth.Namespace(s.Namespace))
+
 	// initialize the micro service
 	var srvOpts []micro.Option
 	srvOpts = append(srvOpts, micro.Name("go.micro.auth")) // use this name for `micro` cli
