@@ -133,7 +133,7 @@ func (w *Wx) Login(ctx context.Context, req *liveuser.LoginReq, res *liveuser.Lo
 	return nil
 }
 
-func (w *Wx) RefreshToken(ctx context.Context, req *liveuser.RefreshTokenReq, res *liveuser.RefreshTokenRes) error {
+func (w *Wx) RenewToken(ctx context.Context, req *liveuser.RenewTokenReq, res *liveuser.RenewTokenRes) error {
 	authSrv := pb.NewAuthService("go.micro.auth", w.microClient)
 	tokenRes, err := authSrv.Token(ctx, &pb.TokenRequest{
 		RefreshToken: req.RefreshToken,
@@ -144,6 +144,8 @@ func (w *Wx) RefreshToken(ctx context.Context, req *liveuser.RefreshTokenReq, re
 		return err
 	}
 	res.AccessToken = tokenRes.GetToken().GetAccessToken()
+	res.RefreshToken = tokenRes.GetToken().GetRefreshToken()
+	res.Expiry = tokenRes.GetToken().GetExpiry()
 	return nil
 }
 

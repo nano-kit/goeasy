@@ -7,7 +7,7 @@ Table of Contents
     * [Method User.QueryUser](#method-userqueryuser)
 * [Service Wx](#service-wx)
     * [Method Wx.Login](#method-wxlogin)
-    * [Method Wx.RefreshToken](#method-wxrefreshtoken)
+    * [Method Wx.RenewToken](#method-wxrenewtoken)
 * [Enums](#enums)
 * [Objects](#objects)
     * [Object UserRecord](#object-userrecord)
@@ -70,7 +70,7 @@ Response parameters
 > Content-Type: application/json <br/>
 > Authorization: Bearer (token) <br/>
 
-客户端调用 wx.login() 获取临时登录凭证 code ，用此接口回传到开发者服务器。 开发者服务器处理之后，返回开发者服务器的自定义登录态。
+客户端调用 wx.login() 获取临时登录凭证 code ，用此接口回传到开发者服务器。 开发者服务器处理之后，返回开发者服务器的自定义登录态。 关于自定义登录态的解释，可以参考 https://auth0.com/blog/refresh-tokens-what-are-they-and-when-to-use-them/
 
 Request parameters
 
@@ -82,14 +82,14 @@ Response parameters
 
 |   Name    |   Type    |  Description |
 | --------- | --------- | ------------ |
-| access_token | string |  |
-| refresh_token | string |  |
-| expiry | int64 |  |
+| access_token | string | 该用户调用开发者服务器后台的凭据，用来识别用户身份 |
+| refresh_token | string | 用来换取新的 access_token，客户端应该保存在本地存储 |
+| expiry | int64 | access_token 凭证到期的时间，格式为Unix时间戳 |
 
 
-### Method Wx.RefreshToken
+### Method Wx.RenewToken
 
-> POST /liveuser/Wx/RefreshToken <br/>
+> POST /liveuser/Wx/RenewToken <br/>
 > Content-Type: application/json <br/>
 > Authorization: Bearer (token) <br/>
 
@@ -99,13 +99,15 @@ Request parameters
 
 |   Name    |   Type    |  Description |
 | --------- | --------- | ------------ |
-| refresh_token | string |  |
+| refresh_token | string | 客户端保存在本地存储的上次的 refresh_token |
 
 Response parameters
 
 |   Name    |   Type    |  Description |
 | --------- | --------- | ------------ |
-| access_token | string |  |
+| access_token | string | 该用户调用开发者服务器后台的凭据，用来识别用户身份 |
+| refresh_token | string | 用来换取新的 access_token，客户端应该保存在本地存储。 取决于是否开启了 Refresh Token Rotation，它可能与请求时的 refresh_token 不同 |
+| expiry | int64 | access_token 凭证到期的时间，格式为Unix时间戳 |
 
 
 
