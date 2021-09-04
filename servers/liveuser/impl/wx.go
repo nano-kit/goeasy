@@ -60,9 +60,13 @@ type SessionResponse struct {
 	ErrMsg     string `json:"errmsg"`
 }
 
-func (w *Wx) authCode2Session(code string) (ses SessionResponse, err error) {
+func (w *Wx) authCode2Session(ctx context.Context, code string) (ses SessionResponse, err error) {
+	newCtx, s := trace.DefaultTracer.Start(ctx, "auth.code2Session")
+	s.Type = trace.SpanTypeRequestOutbound
+	defer trace.DefaultTracer.Finish(s)
+
 	targetAddress := "https://api.weixin.qq.com/sns/jscode2session"
-	req, err := http.NewRequest("GET", targetAddress, nil)
+	req, err := http.NewRequestWithContext(newCtx, "GET", targetAddress, nil)
 	if err != nil {
 		err = fmt.Errorf("http.NewRequest: %w", err)
 		return
@@ -106,7 +110,7 @@ func (w *Wx) Login(ctx context.Context, req *liveuser.LoginReq, res *liveuser.Lo
 		logger.Warn(err)
 		return err
 	}
-	ses, err := w.authCode2Session(req.Code)
+	ses, err := w.authCode2Session(ctx, req.Code)
 	if err != nil {
 		err := ierr.BadRequest("wx.login: %v, tid: %v", err, traceID)
 		logger.Warn(err)
