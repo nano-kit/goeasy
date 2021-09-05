@@ -126,6 +126,10 @@ Put `serverinit.yaml` under the same directory as goeasy, that is `/opt/goeasy/b
 
 Log files are under directory `/opt/goeasy/log`. They are rotated by logrotate.
 
+### Trace
+
+Trace files are under directory `$HOME/.microtrace`. They are rotated by logrotate.
+
 ### Metrics
 
 Install Prometheus by put this file under `/etc/systemd/system/prometheus.service`

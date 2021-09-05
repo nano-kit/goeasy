@@ -12,10 +12,38 @@ import (
 	ijson "github.com/nano-kit/goeasy/internal/json"
 	"github.com/nano-kit/goeasy/internal/proto"
 	"github.com/nano-kit/goeasy/servers/liveuser"
+	"github.com/uptrace/bun"
 )
 
 type User struct {
 	redisDB *redis.Client
+	sqlDB   *bun.DB
+}
+
+type UserRecord struct {
+	UID      string
+	Name     string
+	Agent    string
+	Avatar   string
+	UpdateAt time.Time
+}
+
+func (u *User) Init(sqlDB *bun.DB, redisDB *redis.Client) {
+	u.redisDB = redisDB
+	u.sqlDB = sqlDB
+
+	// create table
+	models := []interface{}{
+		(*UserRecord)(nil),
+	}
+	for _, model := range models {
+		if _, err := u.sqlDB.NewCreateTable().
+			IfNotExists().
+			Model(model).
+			Exec(context.TODO()); err != nil {
+			logger.Errorf("can not create table: %v", err)
+		}
+	}
 }
 
 func (u *User) onUserActivity(ctx context.Context, event *proto.UserActivityEvent) error {

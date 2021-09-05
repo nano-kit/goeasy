@@ -3,6 +3,7 @@ package impl
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net"
@@ -39,7 +40,7 @@ func (w *Wx) Init(serivce micro.Service, namespace string) {
 			IdleConnTimeout:     1 * time.Minute,
 			MaxConnsPerHost:     10,
 		},
-		Timeout: 2 * time.Second,
+		Timeout: 5 * time.Second,
 	}
 	w.microClient = &clientWrapper{
 		Client:    serivce.Client(),
@@ -81,7 +82,8 @@ func (w *Wx) authCode2Session(ctx context.Context, code string) (ses SessionResp
 
 	resp, err := w.httpClient.Do(req)
 	if err != nil {
-		err = fmt.Errorf("httpClient.Do: %w", err)
+		// hide URL query from error message
+		err = fmt.Errorf("httpClient.Do: %w", errors.Unwrap(err))
 		return
 	}
 	defer resp.Body.Close()

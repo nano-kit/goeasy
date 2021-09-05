@@ -2,13 +2,21 @@ package impl
 
 import (
 	"context"
+	"database/sql"
+	"os"
+	"path/filepath"
 
 	"github.com/go-redis/redis/v8"
 	"github.com/micro/go-micro/v2"
 	log "github.com/micro/go-micro/v2/logger"
 	"github.com/micro/go-micro/v2/server"
 	iconf "github.com/nano-kit/goeasy/internal/config"
+	ipath "github.com/nano-kit/goeasy/internal/path"
 	"github.com/nano-kit/goeasy/servers/liveuser"
+	"github.com/uptrace/bun"
+	"github.com/uptrace/bun/dialect/sqlitedialect"
+	"github.com/uptrace/bun/driver/sqliteshim"
+	"github.com/uptrace/bun/extra/bundebug"
 )
 
 const (
@@ -41,6 +49,22 @@ func (s *Server) Run() {
 		log.SetOption("color", !s.Production),
 	)
 
+	// connect to sql database
+	dir := filepath.Join(ipath.HomeDir(), "."+ServiceName)
+	fname := ServiceName + ".db"
+	os.MkdirAll(dir, 0700)
+	dbPath := filepath.Join(dir, fname)
+	dbURI := "file:" + dbPath + "?cache=shared"
+	sqldb, err := sql.Open(sqliteshim.ShimName, dbURI)
+	if err != nil {
+		log.Fatalf("sql.Open: %v", err)
+	}
+	if err := sqldb.Ping(); err != nil {
+		log.Infof("Ping sql: %v", err)
+	}
+	sqlDB := bun.NewDB(sqldb, sqlitedialect.New())
+	sqlDB.AddQueryHook(bundebug.NewQueryHook(bundebug.WithVerbose()))
+
 	// connect to redis database
 	redisDB := redis.NewClient(&redis.Options{
 		Addr: s.RedisServerAddress,
@@ -57,7 +81,7 @@ func (s *Server) Run() {
 
 	// register subscriber
 	user := new(User)
-	user.redisDB = redisDB
+	user.Init(sqlDB, redisDB)
 	liveuser.RegisterUserHandler(service.Server(), user)
 	wx := new(Wx)
 	wx.Init(service, s.Namespace)
@@ -72,4 +96,7 @@ func (s *Server) Run() {
 
 	// close redis database
 	redisDB.Close()
+
+	// close sql database
+	sqlDB.Close()
 }
