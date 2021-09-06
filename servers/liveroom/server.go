@@ -8,6 +8,7 @@ import (
 	log "github.com/micro/go-micro/v2/logger"
 	"github.com/micro/go-micro/v2/server"
 	iconf "github.com/nano-kit/goeasy/internal/config"
+	"github.com/nano-kit/goeasy/internal/redir"
 	"github.com/nats-io/nats.go"
 )
 
@@ -43,6 +44,7 @@ func (s *Server) Run() {
 		log.SetOption("outputs", s.LogOutputPaths),
 		log.SetOption("color", !s.Production),
 	)
+	redir.RedirectStdoutStderrToFile(ServiceName, s.Production)
 
 	// connect to redis database
 	redisDB := redis.NewClient(&redis.Options{

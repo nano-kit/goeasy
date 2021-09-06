@@ -10,6 +10,7 @@ import (
 	authHandler "github.com/nano-kit/goeasy/auth/handler/auth"
 	rulesHandler "github.com/nano-kit/goeasy/auth/handler/rules"
 	iconf "github.com/nano-kit/goeasy/internal/config"
+	"github.com/nano-kit/goeasy/internal/redir"
 )
 
 const (
@@ -40,6 +41,7 @@ func (s *Server) Run() {
 		log.SetOption("outputs", s.LogOutputPaths),
 		log.SetOption("color", !s.Production),
 	)
+	redir.RedirectStdoutStderrToFile(ServiceName, s.Production)
 
 	// set the auth namespace
 	auth.DefaultAuth.Init(auth.Namespace(s.Namespace))

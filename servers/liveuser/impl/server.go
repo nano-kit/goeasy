@@ -12,6 +12,7 @@ import (
 	"github.com/micro/go-micro/v2/server"
 	iconf "github.com/nano-kit/goeasy/internal/config"
 	ipath "github.com/nano-kit/goeasy/internal/path"
+	"github.com/nano-kit/goeasy/internal/redir"
 	"github.com/nano-kit/goeasy/servers/liveuser"
 	"github.com/uptrace/bun"
 	"github.com/uptrace/bun/dialect/sqlitedialect"
@@ -48,6 +49,7 @@ func (s *Server) Run() {
 		log.SetOption("outputs", s.LogOutputPaths),
 		log.SetOption("color", !s.Production),
 	)
+	redir.RedirectStdoutStderrToFile(ServiceName, s.Production)
 
 	// connect to sql database
 	dir := filepath.Join(ipath.HomeDir(), "."+ServiceName)

@@ -4,6 +4,7 @@ import (
 	"github.com/micro/go-micro/v2"
 	log "github.com/micro/go-micro/v2/logger"
 	iconf "github.com/nano-kit/goeasy/internal/config"
+	"github.com/nano-kit/goeasy/internal/redir"
 )
 
 const (
@@ -34,6 +35,7 @@ func (s *Server) Run() {
 		log.SetOption("outputs", s.LogOutputPaths),
 		log.SetOption("color", !s.Production),
 	)
+	redir.RedirectStdoutStderrToFile(ServiceName, s.Production)
 
 	// initialize the micro service
 	var srvOpts []micro.Option

@@ -11,6 +11,7 @@
 ```
 /opt/goeasy/log/goeasy.log
 /root/.microtrace/trace.csv
+/root/.microstd/*.log
 {
     missingok
     daily

@@ -18,6 +18,7 @@ import (
 	iconf "github.com/nano-kit/goeasy/internal/config"
 	"github.com/nano-kit/goeasy/internal/handler"
 	"github.com/nano-kit/goeasy/internal/namespace"
+	"github.com/nano-kit/goeasy/internal/redir"
 	"github.com/nano-kit/goeasy/internal/resolver/api"
 	"github.com/nano-kit/goeasy/internal/rlimit"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -60,6 +61,7 @@ func (s *Server) Run() {
 		log.SetOption("outputs", s.LogOutputPaths),
 		log.SetOption("color", !s.Production),
 	)
+	redir.RedirectStdoutStderrToFile(ServiceName, s.Production)
 
 	// set max open files
 	_ = rlimit.SetNumFiles(10240)
