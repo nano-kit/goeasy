@@ -3,10 +3,10 @@ syntax = "proto3";
 package liveuser;
 
 service User {
-    // 新增或更新用户信息
-    rpc AddUser(AddUserReq) returns (AddUserRes);
-    // 查询用户信息
-    rpc QueryUser(QueryUserReq) returns (QueryUserRes);
+    // 新增或更新自己的用户信息
+    rpc Set(SetUserInfoReq) returns (SetUserInfoRes);
+    // 获取自己的用户信息
+    rpc Get(GetUserInfoReq) returns (GetUserInfoRes);
 }
 
 service Wx {
@@ -18,19 +18,19 @@ service Wx {
     rpc RenewToken(RenewTokenReq) returns (RenewTokenRes);
 }
 
-message AddUserReq {
+message SetUserInfoReq {
+    // 需要更新的用户信息。其中 uid, update_at 可以不填。
     UserRecord user = 1;
 }
 
-message AddUserRes {
+message SetUserInfoRes {
 }
 
-message QueryUserReq {
-    repeated string uids = 1;
+message GetUserInfoReq {
 }
 
-message QueryUserRes {
-    repeated UserRecord users = 1;
+message GetUserInfoRes {
+    UserRecord user = 1;
 }
 
 // UserRecord 是用户信息
@@ -38,7 +38,7 @@ message UserRecord {
     string uid = 1; // 唯一ID
     string name = 2; // 姓名
     string agent = 3; // 终端
-    string update_at = 4; // 更新时间(秒)
+    int64 update_at = 4; // 更新时间（毫秒时间戳）
     string avatar = 5; // 头像
 }
 

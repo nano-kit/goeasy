@@ -42,10 +42,10 @@ func NewUserEndpoints() []*api.Endpoint {
 // Client API for User service
 
 type UserService interface {
-	// 新增或更新用户信息
-	AddUser(ctx context.Context, in *AddUserReq, opts ...client.CallOption) (*AddUserRes, error)
-	// 查询用户信息
-	QueryUser(ctx context.Context, in *QueryUserReq, opts ...client.CallOption) (*QueryUserRes, error)
+	// 新增或更新自己的用户信息
+	Set(ctx context.Context, in *SetUserInfoReq, opts ...client.CallOption) (*SetUserInfoRes, error)
+	// 获取自己的用户信息
+	Get(ctx context.Context, in *GetUserInfoReq, opts ...client.CallOption) (*GetUserInfoRes, error)
 }
 
 type userService struct {
@@ -60,9 +60,9 @@ func NewUserService(name string, c client.Client) UserService {
 	}
 }
 
-func (c *userService) AddUser(ctx context.Context, in *AddUserReq, opts ...client.CallOption) (*AddUserRes, error) {
-	req := c.c.NewRequest(c.name, "User.AddUser", in)
-	out := new(AddUserRes)
+func (c *userService) Set(ctx context.Context, in *SetUserInfoReq, opts ...client.CallOption) (*SetUserInfoRes, error) {
+	req := c.c.NewRequest(c.name, "User.Set", in)
+	out := new(SetUserInfoRes)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -70,9 +70,9 @@ func (c *userService) AddUser(ctx context.Context, in *AddUserReq, opts ...clien
 	return out, nil
 }
 
-func (c *userService) QueryUser(ctx context.Context, in *QueryUserReq, opts ...client.CallOption) (*QueryUserRes, error) {
-	req := c.c.NewRequest(c.name, "User.QueryUser", in)
-	out := new(QueryUserRes)
+func (c *userService) Get(ctx context.Context, in *GetUserInfoReq, opts ...client.CallOption) (*GetUserInfoRes, error) {
+	req := c.c.NewRequest(c.name, "User.Get", in)
+	out := new(GetUserInfoRes)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -83,16 +83,16 @@ func (c *userService) QueryUser(ctx context.Context, in *QueryUserReq, opts ...c
 // Server API for User service
 
 type UserHandler interface {
-	// 新增或更新用户信息
-	AddUser(context.Context, *AddUserReq, *AddUserRes) error
-	// 查询用户信息
-	QueryUser(context.Context, *QueryUserReq, *QueryUserRes) error
+	// 新增或更新自己的用户信息
+	Set(context.Context, *SetUserInfoReq, *SetUserInfoRes) error
+	// 获取自己的用户信息
+	Get(context.Context, *GetUserInfoReq, *GetUserInfoRes) error
 }
 
 func RegisterUserHandler(s server.Server, hdlr UserHandler, opts ...server.HandlerOption) error {
 	type user interface {
-		AddUser(ctx context.Context, in *AddUserReq, out *AddUserRes) error
-		QueryUser(ctx context.Context, in *QueryUserReq, out *QueryUserRes) error
+		Set(ctx context.Context, in *SetUserInfoReq, out *SetUserInfoRes) error
+		Get(ctx context.Context, in *GetUserInfoReq, out *GetUserInfoRes) error
 	}
 	type User struct {
 		user
@@ -105,12 +105,12 @@ type userHandler struct {
 	UserHandler
 }
 
-func (h *userHandler) AddUser(ctx context.Context, in *AddUserReq, out *AddUserRes) error {
-	return h.UserHandler.AddUser(ctx, in, out)
+func (h *userHandler) Set(ctx context.Context, in *SetUserInfoReq, out *SetUserInfoRes) error {
+	return h.UserHandler.Set(ctx, in, out)
 }
 
-func (h *userHandler) QueryUser(ctx context.Context, in *QueryUserReq, out *QueryUserRes) error {
-	return h.UserHandler.QueryUser(ctx, in, out)
+func (h *userHandler) Get(ctx context.Context, in *GetUserInfoReq, out *GetUserInfoRes) error {
+	return h.UserHandler.Get(ctx, in, out)
 }
 
 // Api Endpoints for Wx service

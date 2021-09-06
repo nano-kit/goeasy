@@ -22,7 +22,12 @@ func Storage(format string, a ...interface{}) error {
 	return errors.New("E0100", fmt.Sprintf(format, a...), 550)
 }
 
-// Timeout is used with when timeout event happens
+// Timeout is used when timeout event happens
 func Timeout(format string, a ...interface{}) error {
 	return errors.New("E0101", fmt.Sprintf(format, a...), 551)
+}
+
+// NotFound is used when the requested resource does not exist
+func NotFound(format string, a ...interface{}) error {
+	return errors.NotFound("E0102", format, a...)
 }

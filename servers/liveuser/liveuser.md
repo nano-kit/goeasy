@@ -3,8 +3,8 @@
 Table of Contents
 
 * [Service User](#service-user)
-    * [Method User.AddUser](#method-useradduser)
-    * [Method User.QueryUser](#method-userqueryuser)
+    * [Method User.Set](#method-userset)
+    * [Method User.Get](#method-userget)
 * [Service Wx](#service-wx)
     * [Method Wx.Login](#method-wxlogin)
     * [Method Wx.RenewToken](#method-wxrenewtoken)
@@ -19,42 +19,38 @@ Table of Contents
 
 
 
-### Method User.AddUser
+### Method User.Set
 
-> POST /liveuser/User/AddUser <br/>
+> POST /liveuser/User/Set <br/>
 > Content-Type: application/json <br/>
 > Authorization: Bearer (token) <br/>
 
-新增或更新用户信息
+新增或更新自己的用户信息
 
 Request parameters
 
 |   Name    |   Type    |  Description |
 | --------- | --------- | ------------ |
-| user | [object UserRecord](#object-userrecord) |  |
+| user | [object UserRecord](#object-userrecord) | 需要更新的用户信息。其中 uid, update_at 可以不填。 |
 
 Response is empty
 
 
-### Method User.QueryUser
+### Method User.Get
 
-> POST /liveuser/User/QueryUser <br/>
+> POST /liveuser/User/Get <br/>
 > Content-Type: application/json <br/>
 > Authorization: Bearer (token) <br/>
 
-查询用户信息
+获取自己的用户信息
 
-Request parameters
-
-|   Name    |   Type    |  Description |
-| --------- | --------- | ------------ |
-| uids | array of string |  |
+Request is empty
 
 Response parameters
 
 |   Name    |   Type    |  Description |
 | --------- | --------- | ------------ |
-| users | array of [object UserRecord](#object-userrecord) |  |
+| user | [object UserRecord](#object-userrecord) |  |
 
 
 
@@ -128,6 +124,6 @@ Attributes
 | uid | string | 唯一ID |
 | name | string | 姓名 |
 | agent | string | 终端 |
-| update_at | string | 更新时间(秒) |
+| update_at | int64 | 更新时间（毫秒时间戳） |
 | avatar | string | 头像 |
 

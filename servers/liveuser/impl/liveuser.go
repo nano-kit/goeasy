@@ -2,7 +2,7 @@ package impl
 
 import (
 	"context"
-	"encoding/json"
+	"database/sql"
 	"time"
 
 	"github.com/go-redis/redis/v8"
@@ -21,7 +21,7 @@ type User struct {
 }
 
 type UserRecord struct {
-	UID      string
+	UID      string `bun:",pk"`
 	Name     string
 	Agent    string
 	Avatar   string
@@ -51,11 +51,7 @@ func (u *User) onUserActivity(ctx context.Context, event *proto.UserActivityEven
 	return nil
 }
 
-func userRecordKey(uid string) string {
-	return "user:" + uid + ":record"
-}
-
-func (u *User) AddUser(ctx context.Context, req *liveuser.AddUserReq, res *liveuser.AddUserRes) error {
+func (u *User) Set(ctx context.Context, req *liveuser.SetUserInfoReq, res *liveuser.SetUserInfoRes) error {
 	acc, ok := auth.AccountFromContext(ctx)
 	if !ok {
 		return ierr.BadRequest("no account")
@@ -63,39 +59,51 @@ func (u *User) AddUser(ctx context.Context, req *liveuser.AddUserReq, res *liveu
 	if req.User == nil {
 		return ierr.BadRequest("user is nil")
 	}
+	if req.User.Uid == "" {
+		req.User.Uid = acc.ID
+	}
 	if req.User.Uid != acc.ID {
 		return ierr.BadRequest("only your account is allowed")
 	}
-	var record map[string]interface{}
-	data, _ := json.Marshal(req.User)
-	json.Unmarshal(data, &record)
-	err := u.redisDB.HSet(ctx, userRecordKey(acc.ID), record).Err()
+	_, err := u.sqlDB.NewInsert().
+		Model(&UserRecord{
+			UID:      req.User.Uid,
+			Name:     req.User.Name,
+			Agent:    req.User.Agent,
+			Avatar:   req.User.Avatar,
+			UpdateAt: time.Now(),
+		}).
+		On("CONFLICT (uid) DO UPDATE").
+		Set("name = EXCLUDED.name").
+		Set("agent = EXCLUDED.agent").
+		Set("avatar = EXCLUDED.avatar").
+		Set("update_at = EXCLUDED.update_at").
+		Exec(ctx)
 	if err != nil {
-		return ierr.Storage("HSET %q: %v", acc.ID, err)
+		return ierr.Storage("Set %q: %v", acc.ID, err)
 	}
-	u.redisDB.Expire(ctx, userRecordKey(acc.ID), 72*time.Hour)
 	return nil
 }
 
-func (u *User) QueryUser(ctx context.Context, req *liveuser.QueryUserReq, res *liveuser.QueryUserRes) error {
-	if len(req.Uids) == 0 {
-		return ierr.BadRequest("empty uids")
+func (u *User) Get(ctx context.Context, req *liveuser.GetUserInfoReq, res *liveuser.GetUserInfoRes) error {
+	acc, ok := auth.AccountFromContext(ctx)
+	if !ok {
+		return ierr.BadRequest("no account")
 	}
-	cmds := make([]*redis.StringStringMapCmd, len(req.Uids))
-	res.Users = make([]*liveuser.UserRecord, len(req.Uids))
-	pipe := u.redisDB.Pipeline()
-	for i, uid := range req.Uids {
-		cmds[i] = pipe.HGetAll(ctx, userRecordKey(uid))
+	user := &UserRecord{UID: acc.ID}
+	err := u.sqlDB.NewSelect().Model(user).WherePK().Scan(ctx)
+	if err == sql.ErrNoRows {
+		return ierr.NotFound("no such user")
 	}
-	if _, err := pipe.Exec(ctx); err != nil {
-		return ierr.Storage("HGETALL: %v", err)
+	if err != nil {
+		return ierr.Storage("Get %q: %v", acc.ID, err)
 	}
-	for i := range cmds {
-		ssm, _ := cmds[i].Result()
-		data, _ := json.Marshal(ssm)
-		user := new(liveuser.UserRecord)
-		json.Unmarshal(data, user)
-		res.Users[i] = user
+	res.User = &liveuser.UserRecord{
+		Uid:      user.UID,
+		Name:     user.Name,
+		Agent:    user.Agent,
+		Avatar:   user.Avatar,
+		UpdateAt: user.UpdateAt.UnixNano() / 1e6,
 	}
 	return nil
 }
