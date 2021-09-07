@@ -12,7 +12,6 @@ require (
 	github.com/micro/go-micro/v2 v2.9.1
 	github.com/nats-io/nats.go v1.11.0
 	github.com/prometheus/client_golang v1.11.0
-	github.com/slok/go-http-metrics v0.9.0
 	github.com/stretchr/testify v1.7.0
 	github.com/uptrace/bun v1.0.2
 	github.com/uptrace/bun/dialect/sqlitedialect v1.0.2
