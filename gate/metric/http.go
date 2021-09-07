@@ -25,7 +25,7 @@ func HTTPWrapper(handler http.Handler) httpWrapper {
 	})
 	longpoll := New(Config{
 		Recorder: longpoll.NewRecorder(longpoll.Config{
-			DurationBuckets: []float64{5, 20, 40, 60, 80, 100, 120, 200, 300, 500, 800},
+			DurationBuckets: []float64{5, 15, 30, 45, 60, 75, 90, 105, 120, 180, 300},
 		}),
 	})
 	comet := New(Config{
