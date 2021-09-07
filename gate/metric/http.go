@@ -7,19 +7,22 @@ import (
 	"net"
 	"net/http"
 
-	"github.com/slok/go-http-metrics/middleware"
+	gohttpmetrics_middleware "github.com/slok/go-http-metrics/middleware"
 )
 
 // Handler returns an measuring standard http.Handler.
-func Handler(handlerID string, m middleware.Middleware, h http.Handler) http.Handler {
+func Handler(handlerID string, m gohttpmetrics_middleware.Middleware, h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// do not measure the long-polling URL paths
+		hid := handlerID
+
+		// the long-polling URL paths have a dedicated handler ID
 		switch r.URL.Path {
-		case
-			"/comet/subscribe",
-			"/liveroom/room/recv":
-			h.ServeHTTP(w, r)
-			return
+		// TODO should has a DurationBuckets: []float64{5, 60, 300, 600, 1800, 3600, 7200, 43200, 86400, 172800, 604800}
+		case "/comet/subscribe":
+			hid = r.URL.Path
+		// TODO should has a DurationBuckets: []float64{5, 20, 40, 60, 80, 100, 120, 200, 300, 500, 800},
+		case "/liveroom/room/recv":
+			hid = r.URL.Path
 		}
 
 		// starts to measure
@@ -32,18 +35,10 @@ func Handler(handlerID string, m middleware.Middleware, h http.Handler) http.Han
 			r: r,
 		}
 
-		m.Measure(handlerID, reporter, func() {
+		m.Measure(hid, reporter, func() {
 			h.ServeHTTP(wi, r)
 		})
 	})
-}
-
-// HandlerProvider is a helper method that returns a handler provider. This kind of
-// provider is a defacto standard in some frameworks (e.g: Gorilla, Chi...).
-func HandlerProvider(handlerID string, m middleware.Middleware) func(http.Handler) http.Handler {
-	return func(next http.Handler) http.Handler {
-		return Handler(handlerID, m, next)
-	}
 }
 
 type stdReporter struct {
