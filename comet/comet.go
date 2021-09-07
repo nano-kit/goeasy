@@ -73,6 +73,8 @@ func (c *Comet) Subscribe(ctx context.Context, stream Comet_SubscribeStream) err
 	if req.Type != Packet_AUTH {
 		return errs.BadRequest("incorrect-protocol", "expect message type AUTH but got %v: %v", req.Type, token)
 	}
+
+	// TODO inspect the token by go.micro.auth
 	account, err := iauth.AccountFromToken(token)
 	if err != nil {
 		return errs.BadRequest("unidentified-subscriber", "can not extract account from auth token: %v", err)

@@ -74,8 +74,9 @@ func registerMetrics() {
 	if timeCounterSummary == nil {
 		timeCounterSummary = prometheus.NewSummaryVec(
 			prometheus.SummaryOpts{
-				Name: fmt.Sprintf("%slatency_microseconds", DefaultMetricPrefix),
-				Help: "Request latencies in microseconds, partitioned by endpoint",
+				Name:       fmt.Sprintf("%slatency_microseconds", DefaultMetricPrefix),
+				Help:       "Request latencies in microseconds, partitioned by endpoint",
+				Objectives: map[float64]float64{0.5: 0.05, 0.9: 0.01, 0.99: 0.001},
 			},
 			[]string{
 				fmt.Sprintf("%s%s", DefaultLabelPrefix, "name"),

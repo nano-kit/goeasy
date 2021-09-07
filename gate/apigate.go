@@ -22,9 +22,8 @@ import (
 	"github.com/nano-kit/goeasy/internal/resolver/api"
 	"github.com/nano-kit/goeasy/internal/rlimit"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	metrics "github.com/slok/go-http-metrics/metrics/prometheus"
-	"github.com/slok/go-http-metrics/middleware"
-	"github.com/slok/go-http-metrics/middleware/std"
+	gohttpmetrics "github.com/slok/go-http-metrics/metrics/prometheus"
+	gohttpmetrics_middleware "github.com/slok/go-http-metrics/middleware"
 )
 
 const (
@@ -116,10 +115,10 @@ func (s *Server) Run() {
 		router.WithRegistry(service.Options().Registry),
 	)
 	metaHandler := handler.Meta(service, rt, nsResolver.ResolveWithType)
-	mdlw := middleware.New(middleware.Config{
-		Recorder: metrics.NewRecorder(metrics.Config{}),
+	mdlw := gohttpmetrics_middleware.New(gohttpmetrics_middleware.Config{
+		Recorder: gohttpmetrics.NewRecorder(gohttpmetrics.Config{}),
 	})
-	instrumentedMetaHandler := std.Handler("api", mdlw, metaHandler)
+	instrumentedMetaHandler := metric.Handler("api", mdlw, metaHandler)
 	muxRouter.PathPrefix(APIPath).Handler(instrumentedMetaHandler)
 
 	// create the auth wrapper and the server
