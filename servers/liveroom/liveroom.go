@@ -54,12 +54,12 @@ func roomSequenceKey(room string) string {
 }
 
 // nextSequence 对指定房间的序列号，加1之后返回。每个房间的序列号，从1开始。
-func (r *Room) nextSequence(room string) (seq uint64, err error) {
+func (r *Room) nextSequence(ctx context.Context, room string) (seq uint64, err error) {
 	if room == "" {
 		return 0, ierr.BadRequest("empty room identity")
 	}
 	key := roomSequenceKey(room)
-	val, err := r.redisDB.Incr(context.TODO(), key).Result()
+	val, err := r.redisDB.Incr(ctx, key).Result()
 	if err != nil {
 		return 0, ierr.Storage("INCR %q: %v", key, err)
 	}
@@ -67,12 +67,12 @@ func (r *Room) nextSequence(room string) (seq uint64, err error) {
 }
 
 // maxSequence 对请求的序列号，返回已分配的最大值。
-func (r *Room) maxSequence(room string) (max uint64, err error) {
+func (r *Room) maxSequence(ctx context.Context, room string) (max uint64, err error) {
 	if room == "" {
 		return 0, ierr.BadRequest("empty room identity")
 	}
 	key := roomSequenceKey(room)
-	val, err := r.redisDB.Get(context.TODO(), key).Result()
+	val, err := r.redisDB.Get(ctx, key).Result()
 	if err != nil {
 		return 0, ierr.Storage("GET %q: %v", key, err)
 	}
@@ -89,7 +89,7 @@ func roomMessageKey(room string) string {
 }
 
 // saveRoomMessage 保存到房间消息列表
-func (r *Room) saveRoomMessage(msg *RoomMessage) error {
+func (r *Room) saveRoomMessage(ctx context.Context, msg *RoomMessage) error {
 	if msg.Room == "" {
 		return ierr.BadRequest("empty room identity")
 	}
@@ -98,7 +98,7 @@ func (r *Room) saveRoomMessage(msg *RoomMessage) error {
 	if err != nil {
 		return ierr.Internal("marshal room message: %v", err)
 	}
-	add, err := r.redisDB.ZAdd(context.TODO(), key, &redis.Z{
+	add, err := r.redisDB.ZAdd(ctx, key, &redis.Z{
 		Score:  float64(msg.Seq),
 		Member: string(data),
 	}).Result()
@@ -110,17 +110,17 @@ func (r *Room) saveRoomMessage(msg *RoomMessage) error {
 		err = ierr.Storage("duplicate message")
 	}
 	r.notifyNewRoomMessage(msg.Room)
-	r.delStaleRoomMessage(msg.Room)
+	r.delStaleRoomMessage(ctx, msg.Room)
 	return err
 }
 
 // readRoomMessage 读房间消息
-func (r *Room) readRoomMessage(room string, min uint64) ([]*RoomMessage, error) {
+func (r *Room) readRoomMessage(ctx context.Context, room string, min uint64) ([]*RoomMessage, error) {
 	if room == "" {
 		return nil, ierr.BadRequest("empty room identity")
 	}
 	key := roomMessageKey(room)
-	data, err := r.redisDB.ZRangeByScore(context.TODO(), key, &redis.ZRangeBy{
+	data, err := r.redisDB.ZRangeByScore(ctx, key, &redis.ZRangeBy{
 		Min: strconv.FormatUint(min, 10),
 		Max: "+inf",
 	}).Result()
@@ -144,10 +144,15 @@ func roomUpdateKey(room string) string {
 }
 
 // waitForNewRoomMessage 等待有新的房间消息
-func (r *Room) waitForNewRoomMessage(room string, timeout time.Duration) error {
+func (r *Room) waitForNewRoomMessage(ctx context.Context, room string) error {
 	if room == "" {
 		return ierr.BadRequest("empty room identity")
 	}
+	deadline, ok := ctx.Deadline()
+	if !ok {
+		return ierr.BadRequest("no deadline")
+	}
+	timeout := time.Until(deadline)
 	if timeout < 10*time.Second {
 		return ierr.BadRequest("short polling timeout")
 	}
@@ -160,7 +165,7 @@ func (r *Room) waitForNewRoomMessage(room string, timeout time.Duration) error {
 		return ierr.Internal("auto unsubscribe: %v", err)
 	}
 	// Wait for a message
-	if _, err = sub.NextMsg(timeout); err == nats.ErrTimeout {
+	if _, err = sub.NextMsgWithContext(ctx); err == context.DeadlineExceeded {
 		return ierr.Timeout("no new message for room %q after %vs", room, math.Round(timeout.Seconds()))
 	} else if err != nil {
 		return ierr.Internal("next message: %v", err)
@@ -190,7 +195,7 @@ func (r *Room) Send(ctx context.Context, req *SendReq, res *SendRes) error {
 	if err := validateText(req.Text); err != nil {
 		return err
 	}
-	seq, err := r.nextSequence(req.Room)
+	seq, err := r.nextSequence(ctx, req.Room)
 	if err != nil {
 		return err
 	}
@@ -204,7 +209,7 @@ func (r *Room) Send(ctx context.Context, req *SendReq, res *SendRes) error {
 			Text: req.Text,
 		},
 	}
-	err = r.saveRoomMessage(msg)
+	err = r.saveRoomMessage(ctx, msg)
 	return err
 }
 
@@ -216,15 +221,15 @@ func (r *Room) Recv(ctx context.Context, req *RecvReq, res *RecvRes) error {
 	if err := validateRoom(acc.ID, req.Room); err != nil {
 		return err
 	}
-	max, err := r.maxSequence(req.Room)
+	max, err := r.maxSequence(ctx, req.Room)
 	if err != nil {
 		return err
 	}
 	// 更新用户心跳
-	r.updateRoomUser(req.Room, acc.ID)
+	r.updateRoomUser(ctx, req.Room, acc.ID)
 	// 有新消息
 	if req.LastSeq < max {
-		res.Msgs, err = r.readRoomMessage(req.Room, req.LastSeq+1)
+		res.Msgs, err = r.readRoomMessage(ctx, req.Room, req.LastSeq+1)
 		return err
 	}
 	// 等待
@@ -232,11 +237,13 @@ func (r *Room) Recv(ctx context.Context, req *RecvReq, res *RecvRes) error {
 	if !ok {
 		return ierr.BadRequest("no deadline")
 	}
-	if err := r.waitForNewRoomMessage(req.Room, time.Until(deadline.Add(-time.Second))); err != nil {
+	waitCtx, cancel := context.WithDeadline(ctx, deadline.Add(-time.Second))
+	defer cancel()
+	if err := r.waitForNewRoomMessage(waitCtx, req.Room); err != nil {
 		return err
 	}
 	// 重放请求
-	res.Msgs, err = r.readRoomMessage(req.Room, req.LastSeq+1)
+	res.Msgs, err = r.readRoomMessage(ctx, req.Room, req.LastSeq+1)
 	return err
 }
 
@@ -250,10 +257,10 @@ func (r *Room) Enter(ctx context.Context, req *EnterReq, res *EnterRes) error {
 	if !ok {
 		return ierr.BadRequest("no account")
 	}
-	if err := r.addRoomUser(req.Room, acc.ID); err != nil {
+	if err := r.addRoomUser(ctx, req.Room, acc.ID); err != nil {
 		return err
 	}
-	seq, err := r.nextSequence(req.Room)
+	seq, err := r.nextSequence(ctx, req.Room)
 	if err != nil {
 		return err
 	}
@@ -265,10 +272,10 @@ func (r *Room) Enter(ctx context.Context, req *EnterReq, res *EnterRes) error {
 		SendAt:    millisecond(start),
 		EnterRoom: &MsgEnterRoom{},
 	}
-	if err = r.saveRoomMessage(msg); err != nil {
+	if err = r.saveRoomMessage(ctx, msg); err != nil {
 		return err
 	}
-	res.Uids, err = r.queryRoomUsers(req.Room)
+	res.Uids, err = r.queryRoomUsers(ctx, req.Room)
 	return err
 }
 
@@ -281,8 +288,8 @@ func (r *Room) Leave(ctx context.Context, req *LeaveReq, res *LeaveRes) error {
 	if err := validateRoom(acc.ID, req.Room); err != nil {
 		return err
 	}
-	r.delRoomUser(req.Room, acc.ID)
-	seq, err := r.nextSequence(req.Room)
+	r.delRoomUser(ctx, req.Room, acc.ID)
+	seq, err := r.nextSequence(ctx, req.Room)
 	if err != nil {
 		return err
 	}
@@ -294,7 +301,7 @@ func (r *Room) Leave(ctx context.Context, req *LeaveReq, res *LeaveRes) error {
 		SendAt:    millisecond(start),
 		LeaveRoom: &MsgLeaveRoom{},
 	}
-	err = r.saveRoomMessage(msg)
+	err = r.saveRoomMessage(ctx, msg)
 	return err
 }
 
@@ -308,62 +315,62 @@ func userRoomKey(user string) string {
 	return "user:" + user + ":rooms"
 }
 
-func (r *Room) addRoomUser(room, user string) error {
+func (r *Room) addRoomUser(ctx context.Context, room, user string) error {
 	if room == "" || user == "" {
 		return ierr.BadRequest("empty identity")
 	}
 
-	r.updateRoomUser(room, user)
+	r.updateRoomUser(ctx, room, user)
 
 	return nil
 }
 
-func (r *Room) delRoomUser(room, user string) {
+func (r *Room) delRoomUser(ctx context.Context, room, user string) {
 	if room == "" || user == "" {
 		return
 	}
 
-	r.redisDB.ZRem(context.TODO(), roomUserKey(room), user)
-	r.redisDB.ZRem(context.TODO(), userRoomKey(user), room)
+	r.redisDB.ZRem(ctx, roomUserKey(room), user)
+	r.redisDB.ZRem(ctx, userRoomKey(user), room)
 }
 
 const roomUserIdleDuration = 125 * time.Second
 
 const roomUserMaxQueryCount = 100
 
-func (r *Room) updateRoomUser(room, user string) {
+func (r *Room) updateRoomUser(ctx context.Context, room, user string) {
 	if room == "" || user == "" {
 		return
 	}
 
 	now := time.Now()
 
-	r.redisDB.ZAdd(context.TODO(), roomUserKey(room), &redis.Z{
+	r.redisDB.ZAdd(ctx, roomUserKey(room), &redis.Z{
 		Score:  float64(millisecond(now)),
 		Member: user,
 	})
-	r.redisDB.Expire(context.TODO(), roomUserKey(room), roomUserIdleDuration)
-	r.redisDB.ZAdd(context.TODO(), userRoomKey(user), &redis.Z{
+	r.redisDB.Expire(ctx, roomUserKey(room), roomUserIdleDuration)
+	r.redisDB.ZAdd(ctx, userRoomKey(user), &redis.Z{
 		Score:  float64(millisecond(now)),
 		Member: room,
 	})
-	r.redisDB.Expire(context.TODO(), userRoomKey(user), roomUserIdleDuration)
+	r.redisDB.Expire(ctx, userRoomKey(user), roomUserIdleDuration)
 
-	r.delStaleRoomUser(room, user)
+	r.delStaleRoomUser(ctx, room, user)
 }
 
-func (r *Room) delStaleRoomUser(room, user string) {
+func (r *Room) delStaleRoomUser(ctx context.Context, room, user string) {
 	maxTS := strconv.FormatInt(millisecond(time.Now().Add(-roomUserIdleDuration)), 10)
-	r.redisDB.ZRemRangeByScore(context.TODO(), roomUserKey(room), "-inf", maxTS)
-	r.redisDB.ZRemRangeByScore(context.TODO(), userRoomKey(user), "-inf", maxTS)
+	r.redisDB.ZRemRangeByScore(ctx, roomUserKey(room), "-inf", maxTS)
+	r.redisDB.ZRemRangeByScore(ctx, userRoomKey(user), "-inf", maxTS)
 }
 
-func (r *Room) delStaleRoomMessage(room string) {
-	r.redisDB.ZRemRangeByRank(context.TODO(), roomMessageKey(room), 0, -1001)
+func (r *Room) delStaleRoomMessage(ctx context.Context, room string) {
+	r.redisDB.ZRemRangeByRank(ctx, roomMessageKey(room), 0, -1001)
 }
 
-func (r *Room) queryRoomUsers(room string) (uids []string, err error) {
-	return r.redisDB.ZRevRangeByScore(context.TODO(), roomUserKey(room), &redis.ZRangeBy{
+func (r *Room) queryRoomUsers(ctx context.Context, room string) (uids []string, err error) {
+	return r.redisDB.ZRevRangeByScore(ctx, roomUserKey(room), &redis.ZRangeBy{
 		Max:   "+inf",
 		Min:   "-inf",
 		Count: roomUserMaxQueryCount,
