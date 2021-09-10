@@ -52,9 +52,9 @@ message LoginRes {
     // 该用户调用开发者服务器后台的凭据，用来识别用户身份
     string access_token = 1;
     // 用来换取新的 access_token，客户端应该保存在本地存储
-	string refresh_token = 2;
+    string refresh_token = 2;
     // access_token 凭证到期的时间，格式为Unix时间戳
-	int64 expiry = 3;
+    int64 expiry = 3;
 }
 
 message RenewTokenReq {
@@ -67,7 +67,7 @@ message RenewTokenRes {
     string access_token = 1;
     // 用来换取新的 access_token，客户端应该保存在本地存储。
     // 取决于是否开启了 Refresh Token Rotation，它可能与请求时的 refresh_token 不同
-	string refresh_token = 2;
+    string refresh_token = 2;
     // access_token 凭证到期的时间，格式为Unix时间戳
-	int64 expiry = 3;
+    int64 expiry = 3;
 }
