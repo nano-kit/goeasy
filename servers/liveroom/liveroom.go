@@ -3,8 +3,9 @@ package liveroom
 import (
 	"context"
 	"encoding/json"
-	math "math"
+	"math"
 	"strconv"
+	"sync"
 	"text/template"
 	"time"
 
@@ -19,6 +20,10 @@ import (
 type Room struct {
 	redisDB  *redis.Client
 	natsConn *nats.Conn
+
+	mu sync.Mutex // protects inflight
+	// prevent one account from initiating more than one long-polling session
+	inflight map[string]context.CancelFunc
 }
 
 func millisecond(t time.Time) int64 {
@@ -167,6 +172,8 @@ func (r *Room) waitForNewRoomMessage(ctx context.Context, room string) error {
 	// Wait for a message
 	if _, err = sub.NextMsgWithContext(ctx); err == context.DeadlineExceeded {
 		return ierr.Timeout("no new message for room %q after %vs", room, math.Round(timeout.Seconds()))
+	} else if err == context.Canceled {
+		return ierr.Canceled("canceled by a next attempt")
 	} else if err != nil {
 		return ierr.Internal("next message: %v", err)
 	}
@@ -181,6 +188,10 @@ func (r *Room) notifyNewRoomMessage(room string) {
 	if err := r.natsConn.Publish(roomUpdateKey(room), nil); err != nil {
 		logger.Errorf("publish: %v", err)
 	}
+}
+
+func (r *Room) Init() {
+	r.inflight = make(map[string]context.CancelFunc)
 }
 
 func (r *Room) Send(ctx context.Context, req *SendReq, res *SendRes) error {
@@ -237,9 +248,14 @@ func (r *Room) Recv(ctx context.Context, req *RecvReq, res *RecvRes) error {
 	if !ok {
 		return ierr.BadRequest("no deadline")
 	}
-	waitCtx, cancel := context.WithDeadline(ctx, deadline.Add(-time.Second))
-	defer cancel()
-	if err := r.waitForNewRoomMessage(waitCtx, req.Room); err != nil {
+	wait := func() error {
+		waitCtx, cancel := context.WithDeadline(ctx, deadline.Add(-time.Second))
+		defer cancel()
+		r.startWait(acc.ID, cancel) // 记录等待状态
+		defer r.endWait(acc.ID)
+		return r.waitForNewRoomMessage(waitCtx, req.Room)
+	}
+	if err := wait(); err != nil {
 		return err
 	}
 	// 重放请求
@@ -375,4 +391,21 @@ func (r *Room) queryRoomUsers(ctx context.Context, room string) (uids []string, 
 		Min:   "-inf",
 		Count: roomUserMaxQueryCount,
 	}).Result()
+}
+
+func (r *Room) startWait(uid string, cancel context.CancelFunc) {
+	r.mu.Lock()
+	previousCancel := r.inflight[uid]
+	r.inflight[uid] = cancel
+	r.mu.Unlock()
+
+	if previousCancel != nil {
+		previousCancel()
+	}
+}
+
+func (r *Room) endWait(uid string) {
+	r.mu.Lock()
+	delete(r.inflight, uid)
+	r.mu.Unlock()
 }

@@ -75,6 +75,7 @@ func (s *Server) Run() {
 	room := new(Room)
 	room.redisDB = redisDB
 	room.natsConn = s.natsConn
+	room.Init()
 	RegisterRoomHandler(service.Server(), room)
 	micro.RegisterSubscriber(s.Namespace+".topic.user-activity", service.Server(), room.onUserActivity,
 		server.SubscriberQueue(s.Name()))

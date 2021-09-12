@@ -31,3 +31,8 @@ func Timeout(format string, a ...interface{}) error {
 func NotFound(format string, a ...interface{}) error {
 	return errors.NotFound("E0102", format, a...)
 }
+
+// Canceled is used when the processing is canceled explicitly
+func Canceled(format string, a ...interface{}) error {
+	return errors.New("E0103", fmt.Sprintf(format, a...), 552)
+}
