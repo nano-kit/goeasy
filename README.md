@@ -158,4 +158,24 @@ SyslogIdentifier=prometheus
 WantedBy=multi-user.target
 ```
 
+## Start the service
+
+### Use Environment Variables to keep your secret keys safe & secure
+
+one common use for environment variables is to configure sensitive data like passwords in a place that won't accidentally get committed to source control with your application's code.
+
+### Start for development
+
+    sh -ac ' . ./.env; ./goeasy'
+
+### Start for production
+
+Use `EnvironmentFile=` and point it to another configuration file that is only readable by the service account (and users with root access).
+
+* https://serverfault.com/questions/413397/how-to-set-environment-variable-in-systemd-service
+
+### Read environment variables from running process
+
+    cat /proc/$PID/environ | tr '\0' '\n'
+
 ## Play with the service

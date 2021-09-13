@@ -22,3 +22,4 @@ comet/client/client
 *.iml
 
 server.log
+.env
