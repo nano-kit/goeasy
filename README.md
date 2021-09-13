@@ -162,7 +162,7 @@ WantedBy=multi-user.target
 
 ### Use Environment Variables to keep your secret keys safe & secure
 
-one common use for environment variables is to configure sensitive data like passwords in a place that won't accidentally get committed to source control with your application's code.
+One common use for environment variables is to configure sensitive data like passwords in a place that won't accidentally get committed to source control with your application's code.
 
 ### Start for development
 
