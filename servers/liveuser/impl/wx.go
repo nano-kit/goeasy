@@ -52,7 +52,7 @@ func (w *Wx) Init(serivce micro.Service, namespace string) {
 	if w.appID == "" || w.secret == "" {
 		logger.Warn("set WX_APP_ID and WX_APP_SECRET to env")
 	}
-	w.tokenExpiry = 60
+	w.tokenExpiry = 3600
 }
 
 type SessionResponse struct {
