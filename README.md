@@ -166,7 +166,7 @@ One common use for environment variables is to configure sensitive data like pas
 
 ### Start for development
 
-    sh -ac ' . ./.env; ./goeasy'
+    sh -ac '. ./.env; ./goeasy'
 
 ### Start for production
 
