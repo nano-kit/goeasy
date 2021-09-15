@@ -27,6 +27,7 @@ type Wx struct {
 	microClient client.Client
 	appID       string // 小程序 appId
 	secret      string // 小程序 appSecret
+	tokenExpiry int64  // 自定义登录态里 accessToken 的有效时间，单位是秒
 }
 
 func (w *Wx) Init(serivce micro.Service, namespace string) {
@@ -51,6 +52,7 @@ func (w *Wx) Init(serivce micro.Service, namespace string) {
 	if w.appID == "" || w.secret == "" {
 		logger.Warn("set WX_APP_ID and WX_APP_SECRET to env")
 	}
+	w.tokenExpiry = 60
 }
 
 type SessionResponse struct {
@@ -143,6 +145,7 @@ func (w *Wx) RenewToken(ctx context.Context, req *liveuser.RenewTokenReq, res *l
 	authSrv := pb.NewAuthService("go.micro.auth", w.microClient)
 	tokenRes, err := authSrv.Token(ctx, &pb.TokenRequest{
 		RefreshToken: req.RefreshToken,
+		TokenExpiry:  w.tokenExpiry,
 	})
 	if err != nil {
 		err := ierr.Storage("authSrv.Token: %v", err)
@@ -176,8 +179,9 @@ func (w *Wx) createOrUpdateUserAccount(ctx context.Context, ses SessionResponse)
 func (w *Wx) generateUserAccountToken(ctx context.Context, acc *pb.Account) (*pb.Token, error) {
 	authSrv := pb.NewAuthService("go.micro.auth", w.microClient)
 	res, err := authSrv.Token(ctx, &pb.TokenRequest{
-		Id:     acc.Id,
-		Secret: acc.Secret,
+		Id:          acc.Id,
+		Secret:      acc.Secret,
+		TokenExpiry: w.tokenExpiry,
 	})
 	if err != nil {
 		return nil, err
