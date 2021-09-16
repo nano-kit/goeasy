@@ -128,6 +128,10 @@ type WxService interface {
 	Login(ctx context.Context, in *LoginReq, opts ...client.CallOption) (*LoginRes, error)
 	// 开发者服务器的自定义登录态里的 access_token 到期之前，用此接口获取新的 access_token。
 	RenewToken(ctx context.Context, in *RenewTokenReq, opts ...client.CallOption) (*RenewTokenRes, error)
+	// 下单。调用该接口在微信支付服务后台生成预支付交易单，返回正确的预支付交易会话标识。
+	Prepay(ctx context.Context, in *PrepayReq, opts ...client.CallOption) (*PrepayRes, error)
+	// 支付通知。微信支付通过支付通知接口将用户支付成功消息通知给开发者服务器。
+	Postpay(ctx context.Context, in *PostpayReq, opts ...client.CallOption) (*PostpayRes, error)
 }
 
 type wxService struct {
@@ -162,6 +166,26 @@ func (c *wxService) RenewToken(ctx context.Context, in *RenewTokenReq, opts ...c
 	return out, nil
 }
 
+func (c *wxService) Prepay(ctx context.Context, in *PrepayReq, opts ...client.CallOption) (*PrepayRes, error) {
+	req := c.c.NewRequest(c.name, "Wx.Prepay", in)
+	out := new(PrepayRes)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *wxService) Postpay(ctx context.Context, in *PostpayReq, opts ...client.CallOption) (*PostpayRes, error) {
+	req := c.c.NewRequest(c.name, "Wx.Postpay", in)
+	out := new(PostpayRes)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Server API for Wx service
 
 type WxHandler interface {
@@ -171,12 +195,18 @@ type WxHandler interface {
 	Login(context.Context, *LoginReq, *LoginRes) error
 	// 开发者服务器的自定义登录态里的 access_token 到期之前，用此接口获取新的 access_token。
 	RenewToken(context.Context, *RenewTokenReq, *RenewTokenRes) error
+	// 下单。调用该接口在微信支付服务后台生成预支付交易单，返回正确的预支付交易会话标识。
+	Prepay(context.Context, *PrepayReq, *PrepayRes) error
+	// 支付通知。微信支付通过支付通知接口将用户支付成功消息通知给开发者服务器。
+	Postpay(context.Context, *PostpayReq, *PostpayRes) error
 }
 
 func RegisterWxHandler(s server.Server, hdlr WxHandler, opts ...server.HandlerOption) error {
 	type wx interface {
 		Login(ctx context.Context, in *LoginReq, out *LoginRes) error
 		RenewToken(ctx context.Context, in *RenewTokenReq, out *RenewTokenRes) error
+		Prepay(ctx context.Context, in *PrepayReq, out *PrepayRes) error
+		Postpay(ctx context.Context, in *PostpayReq, out *PostpayRes) error
 	}
 	type Wx struct {
 		wx
@@ -195,4 +225,12 @@ func (h *wxHandler) Login(ctx context.Context, in *LoginReq, out *LoginRes) erro
 
 func (h *wxHandler) RenewToken(ctx context.Context, in *RenewTokenReq, out *RenewTokenRes) error {
 	return h.WxHandler.RenewToken(ctx, in, out)
+}
+
+func (h *wxHandler) Prepay(ctx context.Context, in *PrepayReq, out *PrepayRes) error {
+	return h.WxHandler.Prepay(ctx, in, out)
+}
+
+func (h *wxHandler) Postpay(ctx context.Context, in *PostpayReq, out *PostpayRes) error {
+	return h.WxHandler.Postpay(ctx, in, out)
 }

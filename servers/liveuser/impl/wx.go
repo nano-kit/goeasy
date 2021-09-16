@@ -188,3 +188,11 @@ func (w *Wx) generateUserAccountToken(ctx context.Context, acc *pb.Account) (*pb
 	}
 	return res.GetToken(), nil
 }
+
+func (w *Wx) Prepay(ctx context.Context, req *liveuser.PrepayReq, res *liveuser.PrepayRes) error {
+	return nil
+}
+
+func (w *Wx) Postpay(ctx context.Context, req *liveuser.PostpayReq, res *liveuser.PostpayRes) error {
+	return nil
+}

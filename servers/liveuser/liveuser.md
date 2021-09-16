@@ -8,6 +8,8 @@ Table of Contents
 * [Service Wx](#service-wx)
     * [Method Wx.Login](#method-wxlogin)
     * [Method Wx.RenewToken](#method-wxrenewtoken)
+    * [Method Wx.Prepay](#method-wxprepay)
+    * [Method Wx.Postpay](#method-wxpostpay)
 * [Enums](#enums)
 * [Objects](#objects)
     * [Object UserRecord](#object-userrecord)
@@ -104,6 +106,32 @@ Response parameters
 | access_token | string | 该用户调用开发者服务器后台的凭据，用来识别用户身份 |
 | refresh_token | string | 用来换取新的 access_token，客户端应该保存在本地存储。 取决于是否开启了 Refresh Token Rotation，它可能与请求时的 refresh_token 不同 |
 | expiry | int64 | access_token 凭证到期的时间，格式为Unix时间戳 |
+
+
+### Method Wx.Prepay
+
+> POST /liveuser/Wx/Prepay <br/>
+> Content-Type: application/json <br/>
+> Authorization: Bearer (token) <br/>
+
+下单。调用该接口在微信支付服务后台生成预支付交易单，返回正确的预支付交易会话标识。
+
+Request is empty
+
+Response is empty
+
+
+### Method Wx.Postpay
+
+> POST /liveuser/Wx/Postpay <br/>
+> Content-Type: application/json <br/>
+> Authorization: Bearer (token) <br/>
+
+支付通知。微信支付通过支付通知接口将用户支付成功消息通知给开发者服务器。
+
+Request is empty
+
+Response is empty
 
 
 

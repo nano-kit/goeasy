@@ -14,6 +14,7 @@ import (
 	"github.com/nano-kit/goeasy/gate"
 	iconf "github.com/nano-kit/goeasy/internal/config"
 	"github.com/nano-kit/goeasy/internal/reexec"
+	"github.com/nano-kit/goeasy/servers/catalog"
 	"github.com/nano-kit/goeasy/servers/liveroom"
 	liveuser "github.com/nano-kit/goeasy/servers/liveuser/impl"
 )
@@ -34,6 +35,7 @@ var (
 		//{server: sequence.NewServer()},
 		{server: liveroom.NewServer()},
 		{server: liveuser.NewServer()},
+		{server: catalog.NewServer()},
 	}
 )
 

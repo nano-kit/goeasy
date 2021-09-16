@@ -16,6 +16,10 @@ service Wx {
     rpc Login(LoginReq) returns (LoginRes);
     // 开发者服务器的自定义登录态里的 access_token 到期之前，用此接口获取新的 access_token。
     rpc RenewToken(RenewTokenReq) returns (RenewTokenRes);
+    // 下单。调用该接口在微信支付服务后台生成预支付交易单，返回正确的预支付交易会话标识。
+    rpc Prepay(PrepayReq) returns (PrepayRes);
+    // 支付通知。微信支付通过支付通知接口将用户支付成功消息通知给开发者服务器。
+    rpc Postpay(PostpayReq) returns (PostpayRes);
 }
 
 message SetUserInfoReq {
@@ -70,4 +74,20 @@ message RenewTokenRes {
     string refresh_token = 2;
     // access_token 凭证到期的时间，格式为Unix时间戳
     int64 expiry = 3;
+}
+
+message PrepayReq {
+
+}
+
+message PrepayRes {
+
+}
+
+message PostpayReq {
+
+}
+
+message PostpayRes {
+
 }
