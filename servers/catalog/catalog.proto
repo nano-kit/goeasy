@@ -19,6 +19,12 @@ message Product {
     string id = 1;
     string name = 2;
     int32 price_cent = 3;
+
+    uint64 snapshot_id = 1001;
+    int64 created_at = 1002;
+    int64 updated_at = 1003;
+    int64 deleted_at = 1004;
+    string operator = 1005;
 }
 
 message SetReq {

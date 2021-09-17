@@ -14,12 +14,16 @@ import (
 	"github.com/uptrace/bun"
 )
 
+var (
+	zeroTime = time.Time{}
+)
+
 type Catalog struct {
 	sqlDB *bun.DB
 }
 
 type Prod struct {
-	bun.BaseModel `bun:"products"`
+	bun.BaseModel `bun:"products,alias:p"`
 	Snapshot      uint64 `bun:",pk"`
 
 	ID    string
@@ -30,6 +34,13 @@ type Prod struct {
 	UpdatedAt time.Time
 	DeletedAt time.Time
 	Operator  string
+}
+
+func makeTimestamp(tm time.Time) int64 {
+	if tm.IsZero() {
+		return 0
+	}
+	return tm.UnixNano() / int64(time.Millisecond)
 }
 
 func (p *Prod) AfterCreateTable(ctx context.Context, query *bun.CreateTableQuery) error {
@@ -60,6 +71,34 @@ func (c *Catalog) Init(sqlDB *bun.DB) {
 }
 
 func (c *Catalog) List(ctx context.Context, req *ListReq, res *ListRes) error {
+	// 检查参数
+	_, ok := auth.AccountFromContext(ctx)
+	if !ok {
+		return ierr.BadRequest("no account")
+	}
+
+	maxSnapshot := c.sqlDB.NewSelect().Model((*Prod)(nil)).
+		Column("id").
+		ColumnExpr("max(snapshot) AS snapshot").
+		Group("id")
+
+	var products []*Prod
+	err := c.sqlDB.NewSelect().With("pm", maxSnapshot).
+		Model(&products).
+		Join("INNER JOIN pm").
+		JoinOn("p.snapshot = pm.snapshot").
+		JoinOn("p.id = pm.id").
+		//Where("p.deleted_at = ?", zeroTime).
+		Order("p.id").
+		Scan(ctx)
+	if err != nil {
+		return ierr.Storage("Catalog.List: %v", err)
+	}
+
+	res.Products = make([]*Product, len(products))
+	for i, p := range products {
+		res.Products[i] = p.serialize()
+	}
 	return nil
 }
 
@@ -168,7 +207,7 @@ func (c *Catalog) updateProduct(ctx context.Context, acc *auth.Account, oldProd 
 	p.Name = newProd.Name
 	p.Price = newProd.PriceCent
 	p.UpdatedAt = now
-	p.DeletedAt = time.Time{}
+	p.DeletedAt = zeroTime
 	p.Operator = acc.ID
 	_, err := c.sqlDB.NewInsert().Model(p).
 		Exec(ctx)
@@ -200,4 +239,17 @@ func (p *Prod) equals(pp *Product) bool {
 		return true
 	}
 	return false
+}
+
+func (p *Prod) serialize() *Product {
+	return &Product{
+		Id:         p.ID,
+		Name:       p.Name,
+		PriceCent:  p.Price,
+		SnapshotId: p.Snapshot,
+		CreatedAt:  makeTimestamp(p.CreatedAt),
+		UpdatedAt:  makeTimestamp(p.UpdatedAt),
+		DeletedAt:  makeTimestamp(p.DeletedAt),
+		Operator:   p.Operator,
+	}
 }

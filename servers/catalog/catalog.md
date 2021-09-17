@@ -86,4 +86,9 @@ Attributes
 | id | string |  |
 | name | string |  |
 | price_cent | int32 |  |
+| snapshot_id | uint64 |  |
+| created_at | int64 |  |
+| updated_at | int64 |  |
+| deleted_at | int64 |  |
+| operator | string |  |
 
