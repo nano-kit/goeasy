@@ -234,3 +234,83 @@ func (h *wxHandler) Prepay(ctx context.Context, in *PrepayReq, out *PrepayRes) e
 func (h *wxHandler) Postpay(ctx context.Context, in *PostpayReq, out *PostpayRes) error {
 	return h.WxHandler.Postpay(ctx, in, out)
 }
+
+// Api Endpoints for Order service
+
+func NewOrderEndpoints() []*api.Endpoint {
+	return []*api.Endpoint{}
+}
+
+// Client API for Order service
+
+type OrderService interface {
+	// 创建订单
+	Create(ctx context.Context, in *CreateOrderReq, opts ...client.CallOption) (*CreateOrderRes, error)
+	// 查询自己的订单
+	List(ctx context.Context, in *ListOrderReq, opts ...client.CallOption) (*ListOrderRes, error)
+}
+
+type orderService struct {
+	c    client.Client
+	name string
+}
+
+func NewOrderService(name string, c client.Client) OrderService {
+	return &orderService{
+		c:    c,
+		name: name,
+	}
+}
+
+func (c *orderService) Create(ctx context.Context, in *CreateOrderReq, opts ...client.CallOption) (*CreateOrderRes, error) {
+	req := c.c.NewRequest(c.name, "Order.Create", in)
+	out := new(CreateOrderRes)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *orderService) List(ctx context.Context, in *ListOrderReq, opts ...client.CallOption) (*ListOrderRes, error) {
+	req := c.c.NewRequest(c.name, "Order.List", in)
+	out := new(ListOrderRes)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// Server API for Order service
+
+type OrderHandler interface {
+	// 创建订单
+	Create(context.Context, *CreateOrderReq, *CreateOrderRes) error
+	// 查询自己的订单
+	List(context.Context, *ListOrderReq, *ListOrderRes) error
+}
+
+func RegisterOrderHandler(s server.Server, hdlr OrderHandler, opts ...server.HandlerOption) error {
+	type order interface {
+		Create(ctx context.Context, in *CreateOrderReq, out *CreateOrderRes) error
+		List(ctx context.Context, in *ListOrderReq, out *ListOrderRes) error
+	}
+	type Order struct {
+		order
+	}
+	h := &orderHandler{hdlr}
+	return s.Handle(s.NewHandler(&Order{h}, opts...))
+}
+
+type orderHandler struct {
+	OrderHandler
+}
+
+func (h *orderHandler) Create(ctx context.Context, in *CreateOrderReq, out *CreateOrderRes) error {
+	return h.OrderHandler.Create(ctx, in, out)
+}
+
+func (h *orderHandler) List(ctx context.Context, in *ListOrderReq, out *ListOrderRes) error {
+	return h.OrderHandler.List(ctx, in, out)
+}

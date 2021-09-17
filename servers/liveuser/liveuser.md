@@ -10,9 +10,15 @@ Table of Contents
     * [Method Wx.RenewToken](#method-wxrenewtoken)
     * [Method Wx.Prepay](#method-wxprepay)
     * [Method Wx.Postpay](#method-wxpostpay)
+* [Service Order](#service-order)
+    * [Method Order.Create](#method-ordercreate)
+    * [Method Order.List](#method-orderlist)
 * [Enums](#enums)
+    * [Enum OrderRecord.State](#enum-orderrecordstate)
 * [Objects](#objects)
     * [Object UserRecord](#object-userrecord)
+    * [Object OrderProduct](#object-orderproduct)
+    * [Object OrderRecord](#object-orderrecord)
 
 
 
@@ -137,7 +143,52 @@ Response is empty
 
 
 
+## Service Order
+
+
+
+### Method Order.Create
+
+> POST /liveuser/Order/Create <br/>
+> Content-Type: application/json <br/>
+> Authorization: Bearer (token) <br/>
+
+创建订单
+
+Request is empty
+
+Response is empty
+
+
+### Method Order.List
+
+> POST /liveuser/Order/List <br/>
+> Content-Type: application/json <br/>
+> Authorization: Bearer (token) <br/>
+
+查询自己的订单
+
+Request is empty
+
+Response is empty
+
+
+
+
+
 ## Enums
+
+### enum OrderRecord.State
+
+
+
+Constants
+
+|   Value   |   Name    |  Description |
+| --------- | --------- | ------------ |
+| 0  | CREATED |  |
+| 1  | PAID |  |
+
 
 ## Objects
 
@@ -154,4 +205,42 @@ Attributes
 | agent | string | 终端 |
 | update_at | int64 | 更新时间（毫秒时间戳） |
 | avatar | string | 头像 |
+
+
+### object OrderProduct
+
+
+
+Attributes
+
+|   Name    |   Type    |  Description |
+| --------- | --------- | ------------ |
+| order_id | uint64 |  |
+| product_id | string |  |
+| name | string |  |
+| price | int32 |  |
+| count | int32 |  |
+| product_snapshot | uint64 |  |
+| detail | string |  |
+
+
+### object OrderRecord
+
+
+
+Attributes
+
+|   Name    |   Type    |  Description |
+| --------- | --------- | ------------ |
+| id | uint64 |  |
+| uid | string |  |
+| state | [enum OrderRecord.State](#enum-orderrecordstate) |  |
+| amount | int32 |  |
+| discount | int32 |  |
+| pay | int32 |  |
+| pay_at | int64 |  |
+| products | array of [object OrderProduct](#object-orderproduct) |  |
+| created_at | int64 |  |
+| updated_at | int64 |  |
+| deleted_at | int64 |  |
 

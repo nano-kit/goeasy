@@ -114,3 +114,33 @@ message ListOrderReq {
 message ListOrderRes {
 
 }
+
+message OrderProduct {
+    uint64 order_id = 1;
+    string product_id = 2;
+    string name = 3;
+    int32 price = 4;
+    int32 count = 5;
+    uint64 product_snapshot = 6;
+    string detail = 7;
+}
+
+message OrderRecord {
+    enum State {
+        CREATED = 0;
+        PAID = 1;
+    }
+
+    uint64 id = 1;
+    string uid = 2;
+    State state = 3;
+    int32 amount = 4;
+    int32 discount = 5;
+    int32 pay = 6;
+    int64 pay_at = 7;
+    repeated OrderProduct products = 8;
+
+    int64 created_at = 1002;
+    int64 updated_at = 1003;
+    int64 deleted_at = 1004;
+}
