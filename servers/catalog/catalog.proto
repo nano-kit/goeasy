@@ -4,17 +4,25 @@ package catalog;
 
 service Catalog {
     rpc List(ListReq) returns (ListRes);
+    rpc Set(SetReq) returns (SetRes);
 }
 
 message ListReq {
 }
 
 message ListRes {
-
+    repeated Product products = 1;
 }
 
 message Product {
     string id = 1;
     string name = 2;
     int32 price_cent = 3;
+}
+
+message SetReq {
+    Product product = 1;
+}
+
+message SetRes {
 }

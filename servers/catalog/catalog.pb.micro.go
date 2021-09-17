@@ -43,6 +43,7 @@ func NewCatalogEndpoints() []*api.Endpoint {
 
 type CatalogService interface {
 	List(ctx context.Context, in *ListReq, opts ...client.CallOption) (*ListRes, error)
+	Set(ctx context.Context, in *SetReq, opts ...client.CallOption) (*SetRes, error)
 }
 
 type catalogService struct {
@@ -67,15 +68,27 @@ func (c *catalogService) List(ctx context.Context, in *ListReq, opts ...client.C
 	return out, nil
 }
 
+func (c *catalogService) Set(ctx context.Context, in *SetReq, opts ...client.CallOption) (*SetRes, error) {
+	req := c.c.NewRequest(c.name, "Catalog.Set", in)
+	out := new(SetRes)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Server API for Catalog service
 
 type CatalogHandler interface {
 	List(context.Context, *ListReq, *ListRes) error
+	Set(context.Context, *SetReq, *SetRes) error
 }
 
 func RegisterCatalogHandler(s server.Server, hdlr CatalogHandler, opts ...server.HandlerOption) error {
 	type catalog interface {
 		List(ctx context.Context, in *ListReq, out *ListRes) error
+		Set(ctx context.Context, in *SetReq, out *SetRes) error
 	}
 	type Catalog struct {
 		catalog
@@ -90,4 +103,8 @@ type catalogHandler struct {
 
 func (h *catalogHandler) List(ctx context.Context, in *ListReq, out *ListRes) error {
 	return h.CatalogHandler.List(ctx, in, out)
+}
+
+func (h *catalogHandler) Set(ctx context.Context, in *SetReq, out *SetRes) error {
+	return h.CatalogHandler.Set(ctx, in, out)
 }
