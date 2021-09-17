@@ -32,6 +32,16 @@ type Prod struct {
 	Operator  string
 }
 
+func (p *Prod) AfterCreateTable(ctx context.Context, query *bun.CreateTableQuery) error {
+	_, err := query.DB().NewCreateIndex().
+		IfNotExists().
+		Model((*Prod)(nil)).
+		Index("product_id").
+		Column("id").
+		Exec(ctx)
+	return err
+}
+
 func (c *Catalog) Init(sqlDB *bun.DB) {
 	c.sqlDB = sqlDB
 
@@ -47,11 +57,6 @@ func (c *Catalog) Init(sqlDB *bun.DB) {
 			logger.Errorf("can not create table: %v", err)
 		}
 	}
-
-	// create index
-	c.sqlDB.NewCreateIndex().IfNotExists().
-		Model((*Prod)(nil)).Index("product_id").Column("id").
-		Exec(context.TODO())
 }
 
 func (c *Catalog) List(ctx context.Context, req *ListReq, res *ListRes) error {
