@@ -78,6 +78,26 @@ func (c *Catalog) Set(ctx context.Context, req *SetReq, res *SetRes) error {
 	return c.updateProduct(ctx, acc, prod, req.Product)
 }
 
+func (c *Catalog) Delete(ctx context.Context, req *DeleteReq, res *DeleteRes) error {
+	// 检查参数
+	acc, ok := auth.AccountFromContext(ctx)
+	if !ok {
+		return ierr.BadRequest("no account")
+	}
+	if req.ProductId == "" {
+		return ierr.BadRequest("empty product identity")
+	}
+
+	// 查询已经存在的产品
+	prod, ok := c.loadLatestProduct(ctx, req.ProductId)
+	if !ok {
+		return nil
+	}
+
+	// 删除产品
+	return c.deleteProduct(ctx, acc, prod)
+}
+
 func (p *Product) validate() error {
 	if p == nil {
 		return fmt.Errorf("product is nil")
@@ -103,6 +123,10 @@ func (c *Catalog) loadLatestProduct(ctx context.Context, id string) (prod *Prod,
 		Scan(ctx)
 	if err == sql.ErrNoRows {
 		logger.Debugf("Catalog.loadLatestProduct: not found")
+		return nil, false
+	}
+	if !p.DeletedAt.IsZero() {
+		logger.Debugf("Catalog.loadLatestProduct %q: deleted at %v", p.ID, p.DeletedAt)
 		return nil, false
 	}
 	logger.Debugf("Catalog.loadLatestProduct %q: %v", p.ID, ijson.Stringify(p))
@@ -136,16 +160,29 @@ func (c *Catalog) updateProduct(ctx context.Context, acc *auth.Account, oldProd 
 	now := time.Now()
 	p := oldProd
 	p.Snapshot = snowflake.ID()
-	p.ID = newProd.Id
 	p.Name = newProd.Name
 	p.Price = newProd.PriceCent
-	p.CreatedAt = now
 	p.UpdatedAt = now
+	p.DeletedAt = time.Time{}
 	p.Operator = acc.ID
 	_, err := c.sqlDB.NewInsert().Model(p).
 		Exec(ctx)
 	if err != nil {
 		return ierr.Storage("Catalog.updateProduct %q: %v", p.ID, err)
+	}
+	return nil
+}
+
+func (c *Catalog) deleteProduct(ctx context.Context, acc *auth.Account, p *Prod) error {
+	now := time.Now()
+	p.Snapshot = snowflake.ID()
+	p.UpdatedAt = now
+	p.DeletedAt = now
+	p.Operator = acc.ID
+	_, err := c.sqlDB.NewInsert().Model(p).
+		Exec(ctx)
+	if err != nil {
+		return ierr.Storage("Catalog.deleteProduct %q: %v", p.ID, err)
 	}
 	return nil
 }

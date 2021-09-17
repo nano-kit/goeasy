@@ -44,6 +44,7 @@ func NewCatalogEndpoints() []*api.Endpoint {
 type CatalogService interface {
 	List(ctx context.Context, in *ListReq, opts ...client.CallOption) (*ListRes, error)
 	Set(ctx context.Context, in *SetReq, opts ...client.CallOption) (*SetRes, error)
+	Delete(ctx context.Context, in *DeleteReq, opts ...client.CallOption) (*DeleteRes, error)
 }
 
 type catalogService struct {
@@ -78,17 +79,29 @@ func (c *catalogService) Set(ctx context.Context, in *SetReq, opts ...client.Cal
 	return out, nil
 }
 
+func (c *catalogService) Delete(ctx context.Context, in *DeleteReq, opts ...client.CallOption) (*DeleteRes, error) {
+	req := c.c.NewRequest(c.name, "Catalog.Delete", in)
+	out := new(DeleteRes)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Server API for Catalog service
 
 type CatalogHandler interface {
 	List(context.Context, *ListReq, *ListRes) error
 	Set(context.Context, *SetReq, *SetRes) error
+	Delete(context.Context, *DeleteReq, *DeleteRes) error
 }
 
 func RegisterCatalogHandler(s server.Server, hdlr CatalogHandler, opts ...server.HandlerOption) error {
 	type catalog interface {
 		List(ctx context.Context, in *ListReq, out *ListRes) error
 		Set(ctx context.Context, in *SetReq, out *SetRes) error
+		Delete(ctx context.Context, in *DeleteReq, out *DeleteRes) error
 	}
 	type Catalog struct {
 		catalog
@@ -107,4 +120,8 @@ func (h *catalogHandler) List(ctx context.Context, in *ListReq, out *ListRes) er
 
 func (h *catalogHandler) Set(ctx context.Context, in *SetReq, out *SetRes) error {
 	return h.CatalogHandler.Set(ctx, in, out)
+}
+
+func (h *catalogHandler) Delete(ctx context.Context, in *DeleteReq, out *DeleteRes) error {
+	return h.CatalogHandler.Delete(ctx, in, out)
 }

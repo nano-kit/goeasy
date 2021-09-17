@@ -5,6 +5,7 @@ package catalog;
 service Catalog {
     rpc List(ListReq) returns (ListRes);
     rpc Set(SetReq) returns (SetRes);
+    rpc Delete(DeleteReq) returns (DeleteRes);
 }
 
 message ListReq {
@@ -25,4 +26,11 @@ message SetReq {
 }
 
 message SetRes {
+}
+
+message DeleteReq {
+    string product_id = 1;
+}
+
+message DeleteRes {
 }

@@ -5,6 +5,7 @@ Table of Contents
 * [Service Catalog](#service-catalog)
     * [Method Catalog.List](#method-cataloglist)
     * [Method Catalog.Set](#method-catalogset)
+    * [Method Catalog.Delete](#method-catalogdelete)
 * [Enums](#enums)
 * [Objects](#objects)
     * [Object Product](#object-product)
@@ -46,6 +47,23 @@ Request parameters
 |   Name    |   Type    |  Description |
 | --------- | --------- | ------------ |
 | product | [object Product](#object-product) |  |
+
+Response is empty
+
+
+### Method Catalog.Delete
+
+> POST /catalog/Catalog/Delete <br/>
+> Content-Type: application/json <br/>
+> Authorization: Bearer (token) <br/>
+
+
+
+Request parameters
+
+|   Name    |   Type    |  Description |
+| --------- | --------- | ------------ |
+| product_id | string |  |
 
 Response is empty
 
