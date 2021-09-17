@@ -22,6 +22,13 @@ service Wx {
     rpc Postpay(PostpayReq) returns (PostpayRes);
 }
 
+service Order {
+    // 创建订单
+    rpc Create(CreateOrderReq) returns (CreateOrderRes);
+    // 查询自己的订单
+    rpc List(ListOrderReq) returns (ListOrderRes);
+}
+
 message SetUserInfoReq {
     // 需要更新的用户信息。其中 uid, update_at 可以不填。
     UserRecord user = 1;
@@ -89,5 +96,21 @@ message PostpayReq {
 }
 
 message PostpayRes {
+
+}
+
+message CreateOrderReq {
+
+}
+
+message CreateOrderRes {
+
+}
+
+message ListOrderReq {
+
+}
+
+message ListOrderRes {
 
 }
