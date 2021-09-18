@@ -10,7 +10,8 @@ import (
 	"github.com/micro/go-micro/v2/logger"
 	"github.com/micro/go-micro/v2/util/snowflake"
 	"github.com/nano-kit/goeasy/internal/ierr"
-	ijson "github.com/nano-kit/goeasy/internal/json"
+	"github.com/nano-kit/goeasy/internal/ijson"
+	"github.com/nano-kit/goeasy/internal/itime"
 	"github.com/uptrace/bun"
 )
 
@@ -34,13 +35,6 @@ type Prod struct {
 	UpdatedAt time.Time
 	DeletedAt time.Time
 	Operator  string
-}
-
-func makeTimestamp(tm time.Time) int64 {
-	if tm.IsZero() {
-		return 0
-	}
-	return tm.UnixNano() / int64(time.Millisecond)
 }
 
 func (p *Prod) AfterCreateTable(ctx context.Context, query *bun.CreateTableQuery) error {
@@ -140,6 +134,32 @@ func (c *Catalog) Delete(ctx context.Context, req *DeleteReq, res *DeleteRes) er
 
 	// 删除产品
 	return c.deleteProduct(ctx, acc, prod)
+}
+
+func (c *Catalog) FindBySnapshot(ctx context.Context, req *FindBySnapshotReq, res *FindBySnapshotRes) error {
+	// 检查参数
+	_, ok := auth.AccountFromContext(ctx)
+	if !ok {
+		return ierr.BadRequest("no account")
+	}
+	if len(req.Snapshots) == 0 {
+		return ierr.BadRequest("no product")
+	}
+
+	var products []*Prod
+	err := c.sqlDB.NewSelect().Model(&products).
+		Where("snapshot IN (?)", bun.In(req.Snapshots)).
+		Order("id").
+		Scan(ctx)
+	if err != nil {
+		return ierr.Storage("Catalog.FindBySnapshot: %v", err)
+	}
+
+	res.Products = make([]*Product, len(products))
+	for i, p := range products {
+		res.Products[i] = p.serialize()
+	}
+	return nil
 }
 
 func (p *Product) validate() error {
@@ -243,13 +263,13 @@ func (p *Prod) equals(pp *Product) bool {
 
 func (p *Prod) serialize() *Product {
 	return &Product{
-		Id:         p.ID,
-		Name:       p.Name,
-		PriceCent:  p.Price,
-		SnapshotId: p.Snapshot,
-		CreatedAt:  makeTimestamp(p.CreatedAt),
-		UpdatedAt:  makeTimestamp(p.UpdatedAt),
-		DeletedAt:  makeTimestamp(p.DeletedAt),
-		Operator:   p.Operator,
+		Id:        p.ID,
+		Name:      p.Name,
+		PriceCent: p.Price,
+		Snapshot:  p.Snapshot,
+		CreatedAt: itime.MakeTimestamp(p.CreatedAt),
+		UpdatedAt: itime.MakeTimestamp(p.UpdatedAt),
+		DeletedAt: itime.MakeTimestamp(p.DeletedAt),
+		Operator:  p.Operator,
 	}
 }

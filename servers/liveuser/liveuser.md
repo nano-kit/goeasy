@@ -155,9 +155,17 @@ Response is empty
 
 创建订单
 
-Request is empty
+Request parameters
 
-Response is empty
+|   Name    |   Type    |  Description |
+| --------- | --------- | ------------ |
+| products | array of [object OrderProduct](#object-orderproduct) |  |
+
+Response parameters
+
+|   Name    |   Type    |  Description |
+| --------- | --------- | ------------ |
+| order | [object OrderRecord](#object-orderrecord) |  |
 
 
 ### Method Order.List
@@ -170,7 +178,11 @@ Response is empty
 
 Request is empty
 
-Response is empty
+Response parameters
+
+|   Name    |   Type    |  Description |
+| --------- | --------- | ------------ |
+| orders | array of [object OrderRecord](#object-orderrecord) |  |
 
 
 

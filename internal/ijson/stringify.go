@@ -1,4 +1,4 @@
-package json
+package ijson
 
 import "encoding/json"
 

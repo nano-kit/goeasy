@@ -18,7 +18,7 @@ import (
 	"github.com/micro/go-micro/v2/debug/trace"
 	"github.com/micro/go-micro/v2/logger"
 	"github.com/nano-kit/goeasy/internal/ierr"
-	ijson "github.com/nano-kit/goeasy/internal/json"
+	"github.com/nano-kit/goeasy/internal/ijson"
 	"github.com/nano-kit/goeasy/servers/liveuser"
 )
 

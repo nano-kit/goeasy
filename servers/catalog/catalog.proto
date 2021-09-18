@@ -6,6 +6,7 @@ service Catalog {
     rpc List(ListReq) returns (ListRes);
     rpc Set(SetReq) returns (SetRes);
     rpc Delete(DeleteReq) returns (DeleteRes);
+    rpc FindBySnapshot(FindBySnapshotReq) returns (FindBySnapshotRes);
 }
 
 message ListReq {
@@ -20,7 +21,7 @@ message Product {
     string name = 2;
     int32 price_cent = 3;
 
-    uint64 snapshot_id = 1001;
+    uint64 snapshot = 1001;
     int64 created_at = 1002;
     int64 updated_at = 1003;
     int64 deleted_at = 1004;
@@ -39,4 +40,12 @@ message DeleteReq {
 }
 
 message DeleteRes {
+}
+
+message FindBySnapshotReq {
+    repeated uint64 snapshots = 1;
+}
+
+message FindBySnapshotRes {
+    repeated Product products = 1;
 }

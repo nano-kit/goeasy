@@ -45,6 +45,7 @@ type CatalogService interface {
 	List(ctx context.Context, in *ListReq, opts ...client.CallOption) (*ListRes, error)
 	Set(ctx context.Context, in *SetReq, opts ...client.CallOption) (*SetRes, error)
 	Delete(ctx context.Context, in *DeleteReq, opts ...client.CallOption) (*DeleteRes, error)
+	FindBySnapshot(ctx context.Context, in *FindBySnapshotReq, opts ...client.CallOption) (*FindBySnapshotRes, error)
 }
 
 type catalogService struct {
@@ -89,12 +90,23 @@ func (c *catalogService) Delete(ctx context.Context, in *DeleteReq, opts ...clie
 	return out, nil
 }
 
+func (c *catalogService) FindBySnapshot(ctx context.Context, in *FindBySnapshotReq, opts ...client.CallOption) (*FindBySnapshotRes, error) {
+	req := c.c.NewRequest(c.name, "Catalog.FindBySnapshot", in)
+	out := new(FindBySnapshotRes)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Server API for Catalog service
 
 type CatalogHandler interface {
 	List(context.Context, *ListReq, *ListRes) error
 	Set(context.Context, *SetReq, *SetRes) error
 	Delete(context.Context, *DeleteReq, *DeleteRes) error
+	FindBySnapshot(context.Context, *FindBySnapshotReq, *FindBySnapshotRes) error
 }
 
 func RegisterCatalogHandler(s server.Server, hdlr CatalogHandler, opts ...server.HandlerOption) error {
@@ -102,6 +114,7 @@ func RegisterCatalogHandler(s server.Server, hdlr CatalogHandler, opts ...server
 		List(ctx context.Context, in *ListReq, out *ListRes) error
 		Set(ctx context.Context, in *SetReq, out *SetRes) error
 		Delete(ctx context.Context, in *DeleteReq, out *DeleteRes) error
+		FindBySnapshot(ctx context.Context, in *FindBySnapshotReq, out *FindBySnapshotRes) error
 	}
 	type Catalog struct {
 		catalog
@@ -124,4 +137,8 @@ func (h *catalogHandler) Set(ctx context.Context, in *SetReq, out *SetRes) error
 
 func (h *catalogHandler) Delete(ctx context.Context, in *DeleteReq, out *DeleteRes) error {
 	return h.CatalogHandler.Delete(ctx, in, out)
+}
+
+func (h *catalogHandler) FindBySnapshot(ctx context.Context, in *FindBySnapshotReq, out *FindBySnapshotRes) error {
+	return h.CatalogHandler.FindBySnapshot(ctx, in, out)
 }

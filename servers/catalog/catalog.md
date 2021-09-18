@@ -6,6 +6,7 @@ Table of Contents
     * [Method Catalog.List](#method-cataloglist)
     * [Method Catalog.Set](#method-catalogset)
     * [Method Catalog.Delete](#method-catalogdelete)
+    * [Method Catalog.FindBySnapshot](#method-catalogfindbysnapshot)
 * [Enums](#enums)
 * [Objects](#objects)
     * [Object Product](#object-product)
@@ -68,6 +69,27 @@ Request parameters
 Response is empty
 
 
+### Method Catalog.FindBySnapshot
+
+> POST /catalog/Catalog/FindBySnapshot <br/>
+> Content-Type: application/json <br/>
+> Authorization: Bearer (token) <br/>
+
+
+
+Request parameters
+
+|   Name    |   Type    |  Description |
+| --------- | --------- | ------------ |
+| snapshots | array of uint64 |  |
+
+Response parameters
+
+|   Name    |   Type    |  Description |
+| --------- | --------- | ------------ |
+| products | array of [object Product](#object-product) |  |
+
+
 
 
 
@@ -86,7 +108,7 @@ Attributes
 | id | string |  |
 | name | string |  |
 | price_cent | int32 |  |
-| snapshot_id | uint64 |  |
+| snapshot | uint64 |  |
 | created_at | int64 |  |
 | updated_at | int64 |  |
 | deleted_at | int64 |  |

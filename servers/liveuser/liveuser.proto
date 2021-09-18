@@ -100,19 +100,18 @@ message PostpayRes {
 }
 
 message CreateOrderReq {
-
+    repeated OrderProduct products = 1;
 }
 
 message CreateOrderRes {
-
+    OrderRecord order = 1;
 }
 
 message ListOrderReq {
-
 }
 
 message ListOrderRes {
-
+    repeated OrderRecord orders = 1;
 }
 
 message OrderProduct {

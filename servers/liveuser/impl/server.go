@@ -88,6 +88,10 @@ func (s *Server) Run() {
 	wx := new(Wx)
 	wx.Init(service, s.Namespace)
 	liveuser.RegisterWxHandler(service.Server(), wx)
+	order := new(OrderService)
+	order.Init(sqlDB)
+	order.InitMicroClient(service, s.Namespace)
+	liveuser.RegisterOrderHandler(service.Server(), order)
 	micro.RegisterSubscriber(s.Namespace+".topic.user-activity", service.Server(), user.onUserActivity,
 		server.SubscriberQueue(s.Name()))
 
