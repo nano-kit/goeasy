@@ -176,13 +176,18 @@ Response parameters
 
 查询自己的订单
 
-Request is empty
+Request parameters
+
+|   Name    |   Type    |  Description |
+| --------- | --------- | ------------ |
+| cursor | uint64 |  |
 
 Response parameters
 
 |   Name    |   Type    |  Description |
 | --------- | --------- | ------------ |
 | orders | array of [object OrderRecord](#object-orderrecord) |  |
+| cursor | uint64 |  |
 
 
 

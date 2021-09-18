@@ -3,6 +3,7 @@ package impl
 import (
 	"context"
 	"fmt"
+	"math"
 	"time"
 
 	"github.com/micro/go-micro/v2"
@@ -172,14 +173,23 @@ func (o *OrderService) List(ctx context.Context, req *liveuser.ListOrderReq, res
 	if !ok {
 		return ierr.BadRequest("no account")
 	}
+	if req.Cursor == 0 {
+		req.Cursor = math.MaxUint64
+	}
 
 	// 获取所有订单
 	var orders []*Order
 	err := o.sqlDB.NewSelect().Model(&orders).
+		Where("id < ?", req.Cursor).
 		Where("uid = ?", acc.ID).
+		Order("id DESC").
+		Limit(10).
 		Scan(ctx)
 	if err != nil {
 		return ierr.Storage("ListOrder: %v", err)
+	}
+	if len(orders) == 0 {
+		return nil
 	}
 
 	// 获取所有订单的ID
@@ -187,6 +197,7 @@ func (o *OrderService) List(ctx context.Context, req *liveuser.ListOrderReq, res
 	for i, o := range orders {
 		orderIDs[i] = o.ID
 	}
+	res.Cursor = orderIDs[len(orders)-1]
 
 	// 获取订单内的商品
 	var orderProducts []*OrderProduct

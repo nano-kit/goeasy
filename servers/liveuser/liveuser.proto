@@ -108,10 +108,12 @@ message CreateOrderRes {
 }
 
 message ListOrderReq {
+    uint64 cursor = 1;
 }
 
 message ListOrderRes {
     repeated OrderRecord orders = 1;
+    uint64 cursor = 2;
 }
 
 message OrderProduct {
