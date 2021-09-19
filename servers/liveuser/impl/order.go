@@ -108,26 +108,26 @@ func (o *OrderService) Create(ctx context.Context, req *liveuser.CreateOrderReq,
 	}
 
 	// 查询商品
-	snapshots := make([]uint64, len(req.Products))
+	productIDs := make([]string, len(req.Products))
 	for i, p := range req.Products {
-		snapshots[i] = p.ProductSnapshot
+		productIDs[i] = p.ProductId
 	}
-	snapshotsResponse, err := o.catelogService.FindBySnapshot(ctx, &catalog.FindBySnapshotReq{
-		Snapshots: snapshots,
+	findResponse, err := o.catelogService.FindByID(ctx, &catalog.FindByIDReq{
+		ProductIds: productIDs,
 	})
 	if err != nil {
-		return ierr.Internal("catelogService.FindBySnapshot: %v", err)
+		return ierr.Internal("catelogService.FindByID: %v", err)
 	}
-	products := snapshotsResponse.Products
+	products := findResponse.Products
 	if len(products) == 0 {
-		return ierr.BadRequest("catelogService.FindBySnapshot: no product")
+		return ierr.BadRequest("catelogService.FindByID: no product")
 	}
 
 	// 辅助函数
-	countOfCatalogProduct := func(p *catalog.Product, order []*liveuser.OrderProduct) (count int32) {
-		for _, op := range order {
-			if p.Snapshot == op.ProductSnapshot {
-				return op.Count
+	countOfCatalogProduct := func(p *catalog.Product, orderProducts []*liveuser.OrderProduct) (count int32) {
+		for _, orderProduct := range orderProducts {
+			if orderProduct.ProductId == p.Id {
+				return orderProduct.Count
 			}
 		}
 		return 0
@@ -228,8 +228,8 @@ func (o *OrderService) validateCreateRequest(req *liveuser.CreateOrderReq) error
 		return fmt.Errorf("no product")
 	}
 	for _, p := range req.Products {
-		if p.ProductSnapshot == 0 {
-			return fmt.Errorf("no product snapshot")
+		if p.ProductId == "" {
+			return fmt.Errorf("empty product identity")
 		}
 		if p.Count == 0 {
 			return fmt.Errorf("product count is zero")

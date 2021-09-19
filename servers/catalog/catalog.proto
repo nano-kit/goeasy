@@ -6,7 +6,7 @@ service Catalog {
     rpc List(ListReq) returns (ListRes);
     rpc Set(SetReq) returns (SetRes);
     rpc Delete(DeleteReq) returns (DeleteRes);
-    rpc FindBySnapshot(FindBySnapshotReq) returns (FindBySnapshotRes);
+    rpc FindByID(FindByIDReq) returns (FindByIDRes);
 }
 
 message ListReq {
@@ -42,10 +42,10 @@ message DeleteReq {
 message DeleteRes {
 }
 
-message FindBySnapshotReq {
-    repeated uint64 snapshots = 1;
+message FindByIDReq {
+    repeated string product_ids = 1;
 }
 
-message FindBySnapshotRes {
+message FindByIDRes {
     repeated Product products = 1;
 }

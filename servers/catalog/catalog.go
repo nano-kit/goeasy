@@ -71,20 +71,7 @@ func (c *Catalog) List(ctx context.Context, req *ListReq, res *ListRes) error {
 		return ierr.BadRequest("no account")
 	}
 
-	maxSnapshot := c.sqlDB.NewSelect().Model((*Prod)(nil)).
-		Column("id").
-		ColumnExpr("max(snapshot) AS snapshot").
-		Group("id")
-
-	var products []*Prod
-	err := c.sqlDB.NewSelect().With("pm", maxSnapshot).
-		Model(&products).
-		Join("INNER JOIN pm").
-		JoinOn("p.snapshot = pm.snapshot").
-		JoinOn("p.id = pm.id").
-		//Where("p.deleted_at = ?", zeroTime).
-		Order("p.id").
-		Scan(ctx)
+	products, err := c.load(ctx, nil)
 	if err != nil {
 		return ierr.Storage("Catalog.List: %v", err)
 	}
@@ -136,23 +123,19 @@ func (c *Catalog) Delete(ctx context.Context, req *DeleteReq, res *DeleteRes) er
 	return c.deleteProduct(ctx, acc, prod)
 }
 
-func (c *Catalog) FindBySnapshot(ctx context.Context, req *FindBySnapshotReq, res *FindBySnapshotRes) error {
+func (c *Catalog) FindByID(ctx context.Context, req *FindByIDReq, res *FindByIDRes) error {
 	// 检查参数
 	_, ok := auth.AccountFromContext(ctx)
 	if !ok {
 		return ierr.BadRequest("no account")
 	}
-	if len(req.Snapshots) == 0 {
+	if len(req.ProductIds) == 0 {
 		return ierr.BadRequest("no product")
 	}
 
-	var products []*Prod
-	err := c.sqlDB.NewSelect().Model(&products).
-		Where("snapshot IN (?)", bun.In(req.Snapshots)).
-		Order("id").
-		Scan(ctx)
+	products, err := c.load(ctx, req.ProductIds)
 	if err != nil {
-		return ierr.Storage("Catalog.FindBySnapshot: %v", err)
+		return ierr.Storage("Catalog.FindByID: %v", err)
 	}
 
 	res.Products = make([]*Product, len(products))
@@ -160,6 +143,28 @@ func (c *Catalog) FindBySnapshot(ctx context.Context, req *FindBySnapshotReq, re
 		res.Products[i] = p.serialize()
 	}
 	return nil
+}
+
+func (c *Catalog) load(ctx context.Context, ids []string) ([]*Prod, error) {
+	maxSnapshot := c.sqlDB.NewSelect().Model((*Prod)(nil)).
+		Column("id").
+		ColumnExpr("max(snapshot) AS snapshot").
+		Group("id")
+
+	if len(ids) > 0 {
+		maxSnapshot.Where("id IN (?)", bun.In(ids))
+	}
+
+	var products []*Prod
+	err := c.sqlDB.NewSelect().With("pm", maxSnapshot).
+		Model(&products).
+		Join("INNER JOIN pm").
+		JoinOn("p.snapshot = pm.snapshot").
+		JoinOn("p.id = pm.id").
+		//Where("p.deleted_at = ?", zeroTime).
+		Order("p.id").
+		Scan(ctx)
+	return products, err
 }
 
 func (p *Product) validate() error {
