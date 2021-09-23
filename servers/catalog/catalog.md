@@ -16,7 +16,7 @@ Table of Contents
 
 ## Service Catalog
 
-
+产品目录服务
 
 ### Method Catalog.List
 
@@ -24,7 +24,7 @@ Table of Contents
 > Content-Type: application/json <br/>
 > Authorization: Bearer (token) <br/>
 
-
+列出所有的产品
 
 Request is empty
 
@@ -41,7 +41,7 @@ Response parameters
 > Content-Type: application/json <br/>
 > Authorization: Bearer (token) <br/>
 
-
+增加或者更新产品信息
 
 Request parameters
 
@@ -58,7 +58,7 @@ Response is empty
 > Content-Type: application/json <br/>
 > Authorization: Bearer (token) <br/>
 
-
+删除产品
 
 Request parameters
 
@@ -75,7 +75,7 @@ Response is empty
 > Content-Type: application/json <br/>
 > Authorization: Bearer (token) <br/>
 
-
+根据产品 ID 查询
 
 Request parameters
 
@@ -105,12 +105,12 @@ Attributes
 
 |   Name    |   Type    |  Description |
 | --------- | --------- | ------------ |
-| id | string |  |
-| name | string |  |
-| price_cent | int32 |  |
-| snapshot | uint64 |  |
-| created_at | int64 |  |
-| updated_at | int64 |  |
-| deleted_at | int64 |  |
-| operator | string |  |
+| id | string | 产品编号 |
+| name | string | 产品名称 |
+| price_cent | int32 | 产品价格（单位：分） |
+| snapshot | uint64 | 产品快照编号：记录历史时间线上的一个产品，被订单所引用。 |
+| created_at | int64 | 创建时间 |
+| updated_at | int64 | 更改时间 |
+| deleted_at | int64 | 删除时间 |
+| operator | string | 操作人 |
 

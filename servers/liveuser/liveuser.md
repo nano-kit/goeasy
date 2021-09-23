@@ -159,13 +159,13 @@ Request parameters
 
 |   Name    |   Type    |  Description |
 | --------- | --------- | ------------ |
-| products | array of [object OrderProduct](#object-orderproduct) |  |
+| products | array of [object OrderProduct](#object-orderproduct) | 订单内包含的商品，只需要填 product_id 和 count |
 
 Response parameters
 
 |   Name    |   Type    |  Description |
 | --------- | --------- | ------------ |
-| order | [object OrderRecord](#object-orderrecord) |  |
+| order | [object OrderRecord](#object-orderrecord) | 创建成功的订单 |
 
 
 ### Method Order.List
@@ -180,14 +180,14 @@ Request parameters
 
 |   Name    |   Type    |  Description |
 | --------- | --------- | ------------ |
-| cursor | uint64 |  |
+| cursor | uint64 | 翻页游标：初始值是 0, 下次用服务端返回的 cursor. 当服务端返回 cursor 0 时，翻页结束。 |
 
 Response parameters
 
 |   Name    |   Type    |  Description |
 | --------- | --------- | ------------ |
-| orders | array of [object OrderRecord](#object-orderrecord) |  |
-| cursor | uint64 |  |
+| orders | array of [object OrderRecord](#object-orderrecord) | 订单列表 |
+| cursor | uint64 | 翻页游标：用于下次请求。 |
 
 
 
@@ -197,14 +197,14 @@ Response parameters
 
 ### enum OrderRecord.State
 
-
+订单的状态枚举值
 
 Constants
 
 |   Value   |   Name    |  Description |
 | --------- | --------- | ------------ |
-| 0  | CREATED |  |
-| 1  | PAID |  |
+| 0  | CREATED | 刚创建 |
+| 1  | PAID | 已付费 |
 
 
 ## Objects
@@ -226,38 +226,38 @@ Attributes
 
 ### object OrderProduct
 
-
+订单内的商品
 
 Attributes
 
 |   Name    |   Type    |  Description |
 | --------- | --------- | ------------ |
-| order_id | uint64 |  |
-| product_id | string |  |
-| name | string |  |
-| price | int32 |  |
-| count | int32 |  |
-| product_snapshot | uint64 |  |
-| detail | string |  |
+| order_id | uint64 | 订单编号 |
+| product_id | string | 商品 ID |
+| name | string | 商品名称 |
+| price | int32 | 商品价格 |
+| count | int32 | 商品数量 |
+| product_snapshot | uint64 | 购买时刻的商品快照编号 |
+| detail | string | 购买时刻的商品详情（JSON格式） |
 
 
 ### object OrderRecord
 
-
+一条订单
 
 Attributes
 
 |   Name    |   Type    |  Description |
 | --------- | --------- | ------------ |
-| id | uint64 |  |
-| uid | string |  |
-| state | [enum OrderRecord.State](#enum-orderrecordstate) |  |
-| amount | int32 |  |
-| discount | int32 |  |
-| pay | int32 |  |
-| pay_at | int64 |  |
-| products | array of [object OrderProduct](#object-orderproduct) |  |
-| created_at | int64 |  |
-| updated_at | int64 |  |
-| deleted_at | int64 |  |
+| id | uint64 | 订单编号 |
+| uid | string | 下单的用户ID |
+| state | [enum OrderRecord.State](#enum-orderrecordstate) | 订单状态 |
+| amount | int32 | 商品总额（单位：分） |
+| discount | int32 | 折扣（单位：分） |
+| pay | int32 | 实付款（单位：分） |
+| pay_at | int64 | 支付时间 |
+| products | array of [object OrderProduct](#object-orderproduct) | 订单内的商品 |
+| created_at | int64 | 下单时间 |
+| updated_at | int64 | 订单状态更新时间 |
+| deleted_at | int64 | 删除时间 |
 

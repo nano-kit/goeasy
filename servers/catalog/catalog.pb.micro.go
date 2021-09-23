@@ -42,9 +42,13 @@ func NewCatalogEndpoints() []*api.Endpoint {
 // Client API for Catalog service
 
 type CatalogService interface {
+	// 列出所有的产品
 	List(ctx context.Context, in *ListReq, opts ...client.CallOption) (*ListRes, error)
+	// 增加或者更新产品信息
 	Set(ctx context.Context, in *SetReq, opts ...client.CallOption) (*SetRes, error)
+	// 删除产品
 	Delete(ctx context.Context, in *DeleteReq, opts ...client.CallOption) (*DeleteRes, error)
+	// 根据产品 ID 查询
 	FindByID(ctx context.Context, in *FindByIDReq, opts ...client.CallOption) (*FindByIDRes, error)
 }
 
@@ -103,9 +107,13 @@ func (c *catalogService) FindByID(ctx context.Context, in *FindByIDReq, opts ...
 // Server API for Catalog service
 
 type CatalogHandler interface {
+	// 列出所有的产品
 	List(context.Context, *ListReq, *ListRes) error
+	// 增加或者更新产品信息
 	Set(context.Context, *SetReq, *SetRes) error
+	// 删除产品
 	Delete(context.Context, *DeleteReq, *DeleteRes) error
+	// 根据产品 ID 查询
 	FindByID(context.Context, *FindByIDReq, *FindByIDRes) error
 }
 

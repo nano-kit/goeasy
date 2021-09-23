@@ -2,10 +2,15 @@ syntax = "proto3";
 
 package catalog;
 
+// 产品目录服务
 service Catalog {
+    // 列出所有的产品
     rpc List(ListReq) returns (ListRes);
+    // 增加或者更新产品信息
     rpc Set(SetReq) returns (SetRes);
+    // 删除产品
     rpc Delete(DeleteReq) returns (DeleteRes);
+    // 根据产品 ID 查询
     rpc FindByID(FindByIDReq) returns (FindByIDRes);
 }
 
@@ -17,15 +22,16 @@ message ListRes {
 }
 
 message Product {
-    string id = 1;
-    string name = 2;
-    int32 price_cent = 3;
+    string id = 1; // 产品编号
+    string name = 2; // 产品名称
+    int32 price_cent = 3; // 产品价格（单位：分）
 
+    // 产品快照编号：记录历史时间线上的一个产品，被订单所引用。
     uint64 snapshot = 1001;
-    int64 created_at = 1002;
-    int64 updated_at = 1003;
-    int64 deleted_at = 1004;
-    string operator = 1005;
+    int64 created_at = 1002; // 创建时间
+    int64 updated_at = 1003; // 更改时间
+    int64 deleted_at = 1004; // 删除时间
+    string operator = 1005;  // 操作人
 }
 
 message SetReq {

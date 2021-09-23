@@ -20,6 +20,7 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.ProtoPackageIsVersion3 // please upgrade the proto package
 
+// 订单的状态枚举值
 type OrderRecord_State int32
 
 const (
@@ -581,6 +582,7 @@ func (m *PostpayRes) XXX_DiscardUnknown() {
 var xxx_messageInfo_PostpayRes proto.InternalMessageInfo
 
 type CreateOrderReq struct {
+	// 订单内包含的商品，只需要填 product_id 和 count
 	Products             []*OrderProduct `protobuf:"bytes,1,rep,name=products,proto3" json:"products,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}        `json:"-"`
 	XXX_unrecognized     []byte          `json:"-"`
@@ -620,6 +622,7 @@ func (m *CreateOrderReq) GetProducts() []*OrderProduct {
 }
 
 type CreateOrderRes struct {
+	// 创建成功的订单
 	Order                *OrderRecord `protobuf:"bytes,1,opt,name=order,proto3" json:"order,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}     `json:"-"`
 	XXX_unrecognized     []byte       `json:"-"`
@@ -659,6 +662,7 @@ func (m *CreateOrderRes) GetOrder() *OrderRecord {
 }
 
 type ListOrderReq struct {
+	// 翻页游标：初始值是 0, 下次用服务端返回的 cursor. 当服务端返回 cursor 0 时，翻页结束。
 	Cursor               uint64   `protobuf:"varint,1,opt,name=cursor,proto3" json:"cursor,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -698,11 +702,13 @@ func (m *ListOrderReq) GetCursor() uint64 {
 }
 
 type ListOrderRes struct {
-	Orders               []*OrderRecord `protobuf:"bytes,1,rep,name=orders,proto3" json:"orders,omitempty"`
-	Cursor               uint64         `protobuf:"varint,2,opt,name=cursor,proto3" json:"cursor,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}       `json:"-"`
-	XXX_unrecognized     []byte         `json:"-"`
-	XXX_sizecache        int32          `json:"-"`
+	// 订单列表
+	Orders []*OrderRecord `protobuf:"bytes,1,rep,name=orders,proto3" json:"orders,omitempty"`
+	// 翻页游标：用于下次请求。
+	Cursor               uint64   `protobuf:"varint,2,opt,name=cursor,proto3" json:"cursor,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
 }
 
 func (m *ListOrderRes) Reset()         { *m = ListOrderRes{} }
@@ -744,6 +750,7 @@ func (m *ListOrderRes) GetCursor() uint64 {
 	return 0
 }
 
+// 订单内的商品
 type OrderProduct struct {
 	OrderId              uint64   `protobuf:"varint,1,opt,name=order_id,json=orderId,proto3" json:"order_id,omitempty"`
 	ProductId            string   `protobuf:"bytes,2,opt,name=product_id,json=productId,proto3" json:"product_id,omitempty"`
@@ -831,6 +838,7 @@ func (m *OrderProduct) GetDetail() string {
 	return ""
 }
 
+// 一条订单
 type OrderRecord struct {
 	Id                   uint64            `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
 	Uid                  string            `protobuf:"bytes,2,opt,name=uid,proto3" json:"uid,omitempty"`

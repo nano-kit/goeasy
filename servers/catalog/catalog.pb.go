@@ -91,9 +91,10 @@ func (m *ListRes) GetProducts() []*Product {
 }
 
 type Product struct {
-	Id                   string   `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	Name                 string   `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	PriceCent            int32    `protobuf:"varint,3,opt,name=price_cent,json=priceCent,proto3" json:"price_cent,omitempty"`
+	Id        string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Name      string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	PriceCent int32  `protobuf:"varint,3,opt,name=price_cent,json=priceCent,proto3" json:"price_cent,omitempty"`
+	// 产品快照编号：记录历史时间线上的一个产品，被订单所引用。
 	Snapshot             uint64   `protobuf:"varint,1001,opt,name=snapshot,proto3" json:"snapshot,omitempty"`
 	CreatedAt            int64    `protobuf:"varint,1002,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	UpdatedAt            int64    `protobuf:"varint,1003,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`

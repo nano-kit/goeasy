@@ -32,7 +32,7 @@ type Order struct {
 	Amount   int32      // 商品总额（单位：分）
 	Discount int32      // 折扣（单位：分）
 	Pay      int32      // 实付款（单位：分）
-	PayAt    time.Time  //  支付时间
+	PayAt    time.Time  // 支付时间
 
 	CreatedAt time.Time // 下单时间
 	UpdatedAt time.Time // 订单状态更新时间
