@@ -1,7 +1,6 @@
 package gate
 
 import (
-	"fmt"
 	"net/http"
 	"time"
 
@@ -84,12 +83,7 @@ func (s *Server) Run() {
 
 	// return version at root path
 	muxRouter.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == "OPTIONS" {
-			return
-		}
-
-		response := fmt.Sprintf(`{"version": "%s"}`, "TODO")
-		w.Write([]byte(response))
+		http.Redirect(w, r, PortalPath, http.StatusMovedPermanently)
 	})
 	// strip favicon.ico
 	muxRouter.HandleFunc("/favicon.ico", func(w http.ResponseWriter, r *http.Request) {})
