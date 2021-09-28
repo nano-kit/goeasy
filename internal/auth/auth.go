@@ -2,6 +2,7 @@ package auth
 
 import (
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -9,6 +10,11 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	microauth "github.com/micro/go-micro/v2/auth"
 )
+
+// ErrNotJWT is returned by AccountFromToken when the provided token is
+// not a JWT. In such a case, the caller should use another method to
+// inspect the token.
+var ErrNotJWT = errors.New("auth: not a jwt token")
 
 // authClaims to be encoded in the JWT
 type authClaims struct {
@@ -39,7 +45,7 @@ func AccountToToken(acc *microauth.Account) string {
 func AccountFromToken(token string) (*microauth.Account, error) {
 	// check token format
 	if len(strings.Split(token, ".")) != 3 {
-		return nil, fmt.Errorf("not a jwt token: %v", token)
+		return nil, ErrNotJWT
 	}
 
 	// get the public key from env

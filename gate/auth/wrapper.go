@@ -13,8 +13,8 @@ import (
 	"github.com/micro/go-micro/v2/client"
 	"github.com/micro/go-micro/v2/logger"
 	"github.com/micro/go-micro/v2/util/ctx"
-	asvc "github.com/nano-kit/goeasy/gate/auth/service"
 	iauth "github.com/nano-kit/goeasy/internal/auth"
+	asvc "github.com/nano-kit/goeasy/internal/auth/service"
 	"github.com/nano-kit/goeasy/internal/namespace"
 )
 

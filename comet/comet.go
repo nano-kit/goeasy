@@ -14,6 +14,7 @@ import (
 	"github.com/micro/go-micro/v2/metadata"
 	"github.com/micro/go-micro/v2/util/pubsub"
 	iauth "github.com/nano-kit/goeasy/internal/auth"
+	asvc "github.com/nano-kit/goeasy/internal/auth/service"
 	"github.com/nano-kit/goeasy/internal/proto"
 	"github.com/nano-kit/goeasy/internal/rmgr"
 )
@@ -26,6 +27,7 @@ type Comet struct {
 	g            *pubsub.Group
 	rm           *rmgr.Bucket
 	userActivity micro.Event
+	auth         auth.Auth
 }
 
 func NewComet(namespace string, cli client.Client) *Comet {
@@ -34,6 +36,7 @@ func NewComet(namespace string, cli client.Client) *Comet {
 		g:            pubsub.New(),
 		rm:           rmgr.NewBucket(),
 		userActivity: micro.NewEvent(namespace+".topic.user-activity", cli),
+		auth:         asvc.NewAuth(auth.Namespace(namespace), auth.WithClient(cli)),
 	}
 }
 
@@ -74,8 +77,11 @@ func (c *Comet) Subscribe(ctx context.Context, stream Comet_SubscribeStream) err
 		return errs.BadRequest("incorrect-protocol", "expect message type AUTH but got %v: %v", req.Type, token)
 	}
 
-	// TODO inspect the token by go.micro.auth
 	account, err := iauth.AccountFromToken(token)
+	if err == iauth.ErrNotJWT {
+		// inspect the token by go.micro.auth
+		account, err = c.auth.Inspect(token, auth.InspectContext(ctx))
+	}
 	if err != nil {
 		return errs.BadRequest("unidentified-subscriber", "can not extract account from auth token: %v", err)
 	}
