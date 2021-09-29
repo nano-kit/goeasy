@@ -126,8 +126,9 @@ func (r *Room) readRoomMessage(ctx context.Context, room string, min uint64) ([]
 	}
 	key := roomMessageKey(room)
 	data, err := r.redisDB.ZRangeByScore(ctx, key, &redis.ZRangeBy{
-		Min: strconv.FormatUint(min, 10),
-		Max: "+inf",
+		Min:   strconv.FormatUint(min, 10),
+		Max:   "+inf",
+		Count: 100,
 	}).Result()
 	if err != nil {
 		return nil, ierr.Storage("read room message: %v", err)
