@@ -138,6 +138,7 @@ func (w *Wx) Login(ctx context.Context, req *liveuser.LoginReq, res *liveuser.Lo
 	res.AccessToken = accToken.AccessToken
 	res.RefreshToken = accToken.RefreshToken
 	res.Expiry = accToken.Expiry
+	res.Uid = acc.Id
 	return nil
 }
 

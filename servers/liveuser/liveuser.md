@@ -89,6 +89,7 @@ Response parameters
 | access_token | string | 该用户调用开发者服务器后台的凭据，用来识别用户身份 |
 | refresh_token | string | 用来换取新的 access_token，客户端应该保存在本地存储 |
 | expiry | int64 | access_token 凭证到期的时间，格式为Unix时间戳 |
+| uid | string | 用户的唯一ID |
 
 
 ### Method Wx.RenewToken

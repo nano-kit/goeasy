@@ -66,6 +66,8 @@ message LoginRes {
     string refresh_token = 2;
     // access_token 凭证到期的时间，格式为Unix时间戳
     int64 expiry = 3;
+    // 用户的唯一ID
+    string uid = 4;
 }
 
 message RenewTokenReq {
