@@ -44,7 +44,7 @@ func main() {
 	flag.Parse()
 
 	// connect to the websocket host
-	url := "wss://aclisp.xyz/comet/subscribe"
+	url := "ws://127.0.0.1:8080/comet/subscribe"
 	dialer := ws.Dialer{}
 	ctx := context.Background()
 	log.Println("DIAL " + url)
