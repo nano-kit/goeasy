@@ -167,6 +167,30 @@ func (o *OrderService) Create(ctx context.Context, req *liveuser.CreateOrderReq,
 	return nil
 }
 
+func (o *OrderService) Submit(ctx context.Context, req *liveuser.SubmitOrderReq, res *liveuser.SubmitOrderRes) error {
+	// 检查参数
+	acc, ok := auth.AccountFromContext(ctx)
+	if !ok {
+		return ierr.BadRequest("no account")
+	}
+	// 更新状态
+	sqlRes, err := o.sqlDB.NewUpdate().Table("orders").
+		Set("state = ?", liveuser.OrderRecord_SUBMITTED).
+		Set("updated_at = ?", time.Now()).
+		Where("id = ?", req.OrderId).
+		Where("uid = ?", acc.ID).
+		Where("state = ?", liveuser.OrderRecord_CREATED).
+		Exec(ctx)
+	if err != nil {
+		return ierr.Storage("SubmitOrder: %v", err)
+	}
+	rowsAffected, _ := sqlRes.RowsAffected()
+	if rowsAffected == 0 {
+		return ierr.BadRequest("none affected")
+	}
+	return nil
+}
+
 func (o *OrderService) List(ctx context.Context, req *liveuser.ListOrderReq, res *liveuser.ListOrderRes) error {
 	// 检查参数
 	acc, ok := auth.AccountFromContext(ctx)

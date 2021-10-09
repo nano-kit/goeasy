@@ -12,6 +12,7 @@ Table of Contents
     * [Method Wx.Postpay](#method-wxpostpay)
 * [Service Order](#service-order)
     * [Method Order.Create](#method-ordercreate)
+    * [Method Order.Submit](#method-ordersubmit)
     * [Method Order.List](#method-orderlist)
 * [Enums](#enums)
     * [Enum OrderRecord.State](#enum-orderrecordstate)
@@ -169,6 +170,23 @@ Response parameters
 | order | [object OrderRecord](#object-orderrecord) | 创建成功的订单 |
 
 
+### Method Order.Submit
+
+> POST /liveuser/Order/Submit <br/>
+> Content-Type: application/json <br/>
+> Authorization: Bearer (token) <br/>
+
+提交订单
+
+Request parameters
+
+|   Name    |   Type    |  Description |
+| --------- | --------- | ------------ |
+| order_id | uint64 | 订单编号 |
+
+Response is empty
+
+
 ### Method Order.List
 
 > POST /liveuser/Order/List <br/>
@@ -205,7 +223,8 @@ Constants
 |   Value   |   Name    |  Description |
 | --------- | --------- | ------------ |
 | 0  | CREATED | 刚创建 |
-| 1  | PAID | 已付费 |
+| 1  | SUBMITTED | 已提交 |
+| 2  | PAID | 已付费 |
 
 
 ## Objects

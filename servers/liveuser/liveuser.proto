@@ -25,6 +25,8 @@ service Wx {
 service Order {
     // 创建订单
     rpc Create(CreateOrderReq) returns (CreateOrderRes);
+    // 提交订单
+    rpc Submit(SubmitOrderReq) returns (SubmitOrderRes);
     // 查询自己的订单
     rpc List(ListOrderReq) returns (ListOrderRes);
 }
@@ -111,6 +113,13 @@ message CreateOrderRes {
     OrderRecord order = 1;
 }
 
+message SubmitOrderReq {
+    uint64 order_id = 1; // 订单编号
+}
+
+message SubmitOrderRes {
+}
+
 message ListOrderReq {
     // 翻页游标：初始值是 0, 下次用服务端返回的 cursor. 当服务端返回 cursor 0 时，翻页结束。
     uint64 cursor = 1;
@@ -139,7 +148,8 @@ message OrderRecord {
     // 订单的状态枚举值
     enum State {
         CREATED = 0; // 刚创建
-        PAID = 1;    // 已付费
+        SUBMITTED = 1; // 已提交
+        PAID = 2;    // 已付费
     }
 
     uint64 id = 1; // 订单编号

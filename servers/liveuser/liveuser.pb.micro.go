@@ -246,6 +246,8 @@ func NewOrderEndpoints() []*api.Endpoint {
 type OrderService interface {
 	// 创建订单
 	Create(ctx context.Context, in *CreateOrderReq, opts ...client.CallOption) (*CreateOrderRes, error)
+	// 提交订单
+	Submit(ctx context.Context, in *SubmitOrderReq, opts ...client.CallOption) (*SubmitOrderRes, error)
 	// 查询自己的订单
 	List(ctx context.Context, in *ListOrderReq, opts ...client.CallOption) (*ListOrderRes, error)
 }
@@ -272,6 +274,16 @@ func (c *orderService) Create(ctx context.Context, in *CreateOrderReq, opts ...c
 	return out, nil
 }
 
+func (c *orderService) Submit(ctx context.Context, in *SubmitOrderReq, opts ...client.CallOption) (*SubmitOrderRes, error) {
+	req := c.c.NewRequest(c.name, "Order.Submit", in)
+	out := new(SubmitOrderRes)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *orderService) List(ctx context.Context, in *ListOrderReq, opts ...client.CallOption) (*ListOrderRes, error) {
 	req := c.c.NewRequest(c.name, "Order.List", in)
 	out := new(ListOrderRes)
@@ -287,6 +299,8 @@ func (c *orderService) List(ctx context.Context, in *ListOrderReq, opts ...clien
 type OrderHandler interface {
 	// 创建订单
 	Create(context.Context, *CreateOrderReq, *CreateOrderRes) error
+	// 提交订单
+	Submit(context.Context, *SubmitOrderReq, *SubmitOrderRes) error
 	// 查询自己的订单
 	List(context.Context, *ListOrderReq, *ListOrderRes) error
 }
@@ -294,6 +308,7 @@ type OrderHandler interface {
 func RegisterOrderHandler(s server.Server, hdlr OrderHandler, opts ...server.HandlerOption) error {
 	type order interface {
 		Create(ctx context.Context, in *CreateOrderReq, out *CreateOrderRes) error
+		Submit(ctx context.Context, in *SubmitOrderReq, out *SubmitOrderRes) error
 		List(ctx context.Context, in *ListOrderReq, out *ListOrderRes) error
 	}
 	type Order struct {
@@ -309,6 +324,10 @@ type orderHandler struct {
 
 func (h *orderHandler) Create(ctx context.Context, in *CreateOrderReq, out *CreateOrderRes) error {
 	return h.OrderHandler.Create(ctx, in, out)
+}
+
+func (h *orderHandler) Submit(ctx context.Context, in *SubmitOrderReq, out *SubmitOrderRes) error {
+	return h.OrderHandler.Submit(ctx, in, out)
 }
 
 func (h *orderHandler) List(ctx context.Context, in *ListOrderReq, out *ListOrderRes) error {
