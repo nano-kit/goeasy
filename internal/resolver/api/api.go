@@ -21,6 +21,7 @@ func (r *Resolver) Resolve(req *http.Request) (*resolver.Endpoint, error) {
 		"", "/",
 		"/favicon.ico",
 		"/metrics",
+		"/placeholder",
 		"/portal", "/portal/":
 		return nil, resolver.ErrInvalidPath
 	}

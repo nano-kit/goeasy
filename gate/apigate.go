@@ -13,6 +13,7 @@ import (
 	httpapi "github.com/micro/go-micro/v2/api/server/http"
 	log "github.com/micro/go-micro/v2/logger"
 	"github.com/nano-kit/goeasy/gate/auth"
+	"github.com/nano-kit/goeasy/gate/img"
 	"github.com/nano-kit/goeasy/gate/metric"
 	iconf "github.com/nano-kit/goeasy/internal/config"
 	"github.com/nano-kit/goeasy/internal/handler"
@@ -91,6 +92,8 @@ func (s *Server) Run() {
 	muxRouter.PathPrefix(PortalPath).Handler(http.StripPrefix(PortalPath, http.FileServer(http.Dir("portal"))))
 	// serve the metrics
 	muxRouter.Handle("/metrics", promhttp.Handler())
+	// serve the image placeholder
+	muxRouter.Handle("/placeholder", img.Placeholder())
 
 	// create the namespace resolver
 	nsResolver := namespace.NewResolver("service", s.Namespace)
