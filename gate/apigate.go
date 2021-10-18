@@ -87,7 +87,9 @@ func (s *Server) Run() {
 		http.Redirect(w, r, PortalPath, http.StatusMovedPermanently)
 	})
 	// strip favicon.ico
-	muxRouter.HandleFunc("/favicon.ico", func(w http.ResponseWriter, r *http.Request) {})
+	muxRouter.HandleFunc("/favicon.ico", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "portal/favicon.ico")
+	})
 	// serve the portal static files
 	muxRouter.PathPrefix(PortalPath).Handler(http.StripPrefix(PortalPath, http.FileServer(http.Dir("portal"))))
 	// serve the metrics

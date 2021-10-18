@@ -135,10 +135,6 @@ func parseQuery(q url.Values) (ph placeholder, err error) {
 	return
 }
 
-func etagWeakMatch(a, b string) bool {
-	return strings.TrimPrefix(a, "W/") == strings.TrimPrefix(b, "W/")
-}
-
 func Placeholder() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		placeholder, err := parseQuery(r.URL.Query())
@@ -147,26 +143,27 @@ func Placeholder() http.HandlerFunc {
 			return
 		}
 
-		etag := placeholder.etag()
-
-		w.Header().Set("Content-Type", "image/png")
+		// set HTTP cache
 		w.Header().Set("Expires", time.Now().Add(maxAge*time.Second).Format(http.TimeFormat))
 		w.Header().Set("Cache-Control", fmt.Sprintf("max-age=%d", maxAge))
+		etag := placeholder.etag()
 		w.Header().Set("Etag", etag)
-
 		if match := r.Header.Get("If-None-Match"); match != "" {
-			if etagWeakMatch(match, etag) {
+			if strings.Contains(match, etag) {
 				w.WriteHeader(http.StatusNotModified)
 				return
 			}
 		}
 
+		// generate image
 		img, err := placeholder.image()
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
+		// write as png
+		w.Header().Set("Content-Type", "image/png")
 		if err := png.Encode(w, img); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
