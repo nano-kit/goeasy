@@ -2,6 +2,7 @@ package api
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/micro/go-micro/v2/api/resolver"
 )
@@ -14,16 +15,28 @@ type Resolver struct {
 	Options resolver.Options
 }
 
+var webHandlerPaths = []struct {
+	path   string
+	prefix bool
+}{
+	{path: ""},
+	{path: "/"},
+	{path: "/favicon.ico"},
+	{path: "/metrics"},
+	{path: "/placeholder"},
+	{path: "/o", prefix: true},
+	{path: "/portal", prefix: true},
+}
+
 func (r *Resolver) Resolve(req *http.Request) (*resolver.Endpoint, error) {
 	// resolve as web handler
-	switch req.URL.Path {
-	case
-		"", "/",
-		"/favicon.ico",
-		"/metrics",
-		"/placeholder",
-		"/portal", "/portal/":
-		return nil, resolver.ErrInvalidPath
+	for _, x := range webHandlerPaths {
+		if x.path == req.URL.Path {
+			return nil, resolver.ErrInvalidPath
+		}
+		if x.prefix && strings.HasPrefix(req.URL.Path, x.path+"/") {
+			return nil, resolver.ErrInvalidPath
+		}
 	}
 
 	// resolve as api handler

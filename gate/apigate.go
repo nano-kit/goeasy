@@ -15,6 +15,7 @@ import (
 	"github.com/nano-kit/goeasy/gate/auth"
 	"github.com/nano-kit/goeasy/gate/img"
 	"github.com/nano-kit/goeasy/gate/metric"
+	"github.com/nano-kit/goeasy/gate/upload"
 	iconf "github.com/nano-kit/goeasy/internal/config"
 	"github.com/nano-kit/goeasy/internal/handler"
 	"github.com/nano-kit/goeasy/internal/namespace"
@@ -28,6 +29,7 @@ const (
 	ServiceName = "gate"
 	APIPath     = "/"
 	PortalPath  = "/portal/"
+	UploadPath  = "/o/"
 )
 
 type Server struct {
@@ -96,6 +98,8 @@ func (s *Server) Run() {
 	muxRouter.Handle("/metrics", promhttp.Handler())
 	// serve the image placeholder
 	muxRouter.Handle("/placeholder", img.Placeholder())
+	// serve the file uploader
+	muxRouter.PathPrefix(UploadPath).Handler(upload.Uploader(UploadPath, "uploads"))
 
 	// create the namespace resolver
 	nsResolver := namespace.NewResolver("service", s.Namespace)
