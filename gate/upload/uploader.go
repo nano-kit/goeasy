@@ -107,8 +107,12 @@ func (s uploader) handleUpload(r *http.Request, usePartFilename bool) (uploadedU
 	if usePartFilename {
 		dstPath = path.Join(s.documentRoot, srcInfo.Filename)
 	}
-	if dstPath == path.Clean(s.documentRoot) {
+	docRoot := path.Clean(s.documentRoot)
+	if dstPath == docRoot {
 		return "", http.StatusBadRequest, fmt.Errorf("destination path is effectively document root")
+	}
+	if !strings.HasPrefix(dstPath, docRoot) {
+		return "", http.StatusBadRequest, fmt.Errorf("destination path must be inside document root")
 	}
 	if err := os.MkdirAll(path.Dir(dstPath), 0777); err != nil {
 		return "", http.StatusInternalServerError, err
