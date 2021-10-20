@@ -43,7 +43,7 @@ func Uploader(pathPrefix, documentRoot string) http.HandlerFunc {
 }
 
 func (s uploader) handleGet(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path == s.uploadEntry {
+	if r.URL.Path == s.uploadEntry || strings.HasPrefix(r.URL.Path, s.uploadEntry+"/") {
 		http.Error(w, "invalid path", http.StatusNotFound)
 		return
 	}
@@ -67,7 +67,7 @@ func (s uploader) handlePost(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s uploader) handlePut(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path == s.uploadEntry {
+	if filename := strings.TrimPrefix(r.URL.Path, s.uploadEntry+"/"); filename == r.URL.Path || filename == "" {
 		http.Error(w, "invalid path", http.StatusNotFound)
 		return
 	}
@@ -103,7 +103,7 @@ func (s uploader) handleUpload(r *http.Request, usePartFilename bool) (uploadedU
 	}
 
 	// open the destination file.
-	dstPath := path.Join(s.documentRoot, strings.TrimPrefix(r.URL.Path, s.pathPrefix))
+	dstPath := path.Join(s.documentRoot, strings.TrimPrefix(r.URL.Path, s.uploadEntry+"/"))
 	if usePartFilename {
 		dstPath = path.Join(s.documentRoot, srcInfo.Filename)
 	}
