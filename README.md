@@ -22,17 +22,17 @@ The ability of pushing data from the server to the client requires every connect
 
 HTTP long-polling is supported in client platform where WebSocket is thought to be complicated or inapplicable. Unlike WebSocket, which requires client is always connected to the server, so that the data can be delivered to the client, HTTP long-polling provides a reliable real-time notification mechanism that no message is missing even the client may lose its connection.
 
-### Resilience
+### Elasticity
 
 Goeasy is broken into several servers. Each server do one thing well. One server could have multiple instances. Servers communicate with each other in protobuf Service RPCs.
 
 Among these servers, there is a special kind of server that also exposes HTTP APIs. they are called *gate*. Client talks to goeasy through *gate*. The *gate*s act as the access layer and stay at the edge of goeasy cloud.
 
-There are other kind of servers: *auth* does authentication and authorization; *comet* manages persistent connections; *room* provides a chat room service having reliable messaging; *user*  manages users' profiles. These servers construct a micro-service system that has great resilience when deployed in cloud-native environment.
+There are other kind of servers: *auth* does authentication and authorization; *comet* manages persistent connections; *room* provides a chat room service having reliable messaging; *user*  manages users' profiles. These servers construct a micro-service system that has great elasticity when deployed in cloud-native environment.
 
 ### Infrastructure
 
-Goeasy utilize cloud-native distributed storage solutions such as *CockroachDB* the cloud-native distributed SQL database; *NATS* the cloud and edge native messaging system.
+Goeasy does not reinvent the well-known infrastructure utilities. It utilizes cloud-native distributed solutions such as *CockroachDB* the distributed SQL database; *Cassandra* the distributed NoSQL database; *NATS* the cloud and edge native messaging system; *MinIO* the S3 compatible object storage. However SQLite and Redis are also good enough options for start-up solutions.
 
 ### Deployment
 
