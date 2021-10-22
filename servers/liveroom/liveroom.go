@@ -237,6 +237,10 @@ func (r *Room) Recv(ctx context.Context, req *RecvReq, res *RecvRes) error {
 	if err != nil {
 		return err
 	}
+	// 处理参数
+	if req.LastSeq == 0 && req.OffsetNewest {
+		req.LastSeq = max
+	}
 	// 更新用户心跳
 	r.updateRoomUser(ctx, req.Room, acc.ID)
 	// 有新消息

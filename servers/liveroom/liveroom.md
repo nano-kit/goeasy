@@ -76,6 +76,7 @@ Request parameters
 | --------- | --------- | ------------ |
 | room | string | 聊天室ID |
 | last_seq | uint64 | 客户端记住的已经收取到的最后一条消息的序列号 |
+| offset_newest | bool | 是否从最新的消息开始接收。这个选项只在客户端首次收取消息，也就是last_seq=0时，有效。 为了防止漏掉消息，客户端下次收取必须从前一次收取到的消息的last_seq开始。 |
 
 Response parameters
 
