@@ -72,8 +72,8 @@ func (s *Server) Run() {
 		Addr: s.RedisServerAddress,
 	})
 	if err := redisDB.Ping(context.Background()).Err(); err != nil {
-		// log with info level because it can be reconnected later
-		log.Infof("Ping redis: %v", err)
+		// log with warn level because it can be reconnected later
+		log.Warnf("Ping redis: %v", err)
 	}
 
 	// initialize the micro service
