@@ -93,13 +93,20 @@ func (s *Server) Run() {
 		http.ServeFile(w, r, "portal/favicon.ico")
 	})
 	// serve the portal static files
-	muxRouter.PathPrefix(PortalPath).Handler(http.StripPrefix(PortalPath, http.FileServer(http.Dir("portal"))))
+	muxRouter.PathPrefix(PortalPath).Handler(
+		metric.WebWrapper("portal",
+			http.StripPrefix(PortalPath,
+				http.FileServer(http.Dir("portal")))))
 	// serve the metrics
 	muxRouter.Handle("/metrics", promhttp.Handler())
 	// serve the image placeholder
-	muxRouter.Handle("/placeholder", img.Placeholder())
+	muxRouter.Handle("/placeholder",
+		metric.WebWrapper("placeholder",
+			img.Placeholder()))
 	// serve the file uploader
-	muxRouter.PathPrefix(UploadPath).Handler(upload.Uploader(UploadPath, "uploads"))
+	muxRouter.PathPrefix(UploadPath).Handler(
+		metric.WebWrapper("object",
+			upload.Uploader(UploadPath, "uploads")))
 
 	// create the namespace resolver
 	nsResolver := namespace.NewResolver("service", s.Namespace)
@@ -116,7 +123,7 @@ func (s *Server) Run() {
 		router.WithRegistry(service.Options().Registry),
 	)
 	metaHandler := handler.Meta(service, rt, nsResolver.ResolveWithType)
-	instrumentedMetaHandler := metric.HTTPWrapper(metaHandler)
+	instrumentedMetaHandler := metric.APIWrapper(metaHandler)
 	muxRouter.PathPrefix(APIPath).Handler(instrumentedMetaHandler)
 
 	// create the auth wrapper and the server

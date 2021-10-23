@@ -16,40 +16,42 @@ import (
 	"github.com/nano-kit/goeasy/gate/metric/rest"
 )
 
-// HTTPWrapper returns an measuring standard http.Handler.
-func HTTPWrapper(handler http.Handler) httpWrapper {
-	rest := New(Config{
+var (
+	stdMiddleware = New(Config{
 		Recorder: rest.NewRecorder(rest.Config{
 			DurationBuckets: []float64{.005, .01, .025, .05, .1, .25, .5, 1, 2.5, 5, 10},
 		}),
 	})
-	longpoll := New(Config{
+	longpollMiddleware = New(Config{
 		Recorder: longpoll.NewRecorder(longpoll.Config{
 			DurationBuckets: []float64{5, 15, 30, 45, 60, 75, 90, 105, 120, 180, 300},
 		}),
 	})
-	comet := New(Config{
+	cometMiddleware = New(Config{
 		Recorder: comet.NewRecorder(comet.Config{
 			DurationBuckets: []float64{5, 60, 300, 600, 1800, 3600, 7200, 43200, 86400, 172800, 604800},
 		}),
 	})
+)
 
-	return httpWrapper{
-		rest:     rest,
-		longpoll: longpoll,
-		comet:    comet,
+// APIWrapper returns an measuring standard http.Handler for api related endpoints.
+func APIWrapper(handler http.Handler) apiWrapper {
+	return apiWrapper{
+		rest:     stdMiddleware,
+		longpoll: longpollMiddleware,
+		comet:    cometMiddleware,
 		handler:  handler,
 	}
 }
 
-type httpWrapper struct {
+type apiWrapper struct {
 	rest     Middleware
 	longpoll Middleware
 	comet    Middleware
 	handler  http.Handler
 }
 
-func (h httpWrapper) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h apiWrapper) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	var (
 		handlerID string
 		m         Middleware
@@ -79,6 +81,36 @@ func (h httpWrapper) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	m.Measure(handlerID, reporter, func() {
+		h.handler.ServeHTTP(wi, r)
+	})
+}
+
+func WebWrapper(handlerID string, handler http.Handler) webWrapper {
+	return webWrapper{
+		m:         stdMiddleware,
+		handler:   handler,
+		handlerID: handlerID,
+	}
+}
+
+type webWrapper struct {
+	m         Middleware
+	handler   http.Handler
+	handlerID string
+}
+
+func (h webWrapper) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	// starts to measure
+	wi := &responseWriterInterceptor{
+		statusCode:     http.StatusOK,
+		ResponseWriter: w,
+	}
+	reporter := &stdReporter{
+		w: wi,
+		r: r,
+	}
+
+	h.m.Measure(h.handlerID, reporter, func() {
 		h.handler.ServeHTTP(wi, r)
 	})
 }
