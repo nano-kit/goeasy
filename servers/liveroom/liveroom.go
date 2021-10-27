@@ -172,7 +172,7 @@ func (r *Room) waitForNewRoomMessage(ctx context.Context, room string) error {
 	}
 	// Wait for a message
 	if _, err = sub.NextMsgWithContext(ctx); err == context.DeadlineExceeded {
-		return ierr.Timeout("no new message for room %q after %vs", room, math.Round(timeout.Seconds()))
+		return ierr.PollTimeout("no new message for room %q after %vs", room, math.Round(timeout.Seconds()))
 	} else if err == context.Canceled {
 		return ierr.Canceled("canceled by a next attempt")
 	} else if err != nil {
