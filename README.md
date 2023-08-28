@@ -37,3 +37,8 @@ Goeasy does not reinvent the well-known infrastructure utilities. It utilizes cl
 ### Deployment
 
 Goeasy could be deployed as bundle of servers, it could also be deployed as an all in one executable. This is convenient for testing and minimum viable product verification.
+
+## Documents
+
+* [Setup a SaaS](HowToSetup.md)
+* [Project Layout](ProjectLayout.md)
