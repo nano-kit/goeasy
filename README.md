@@ -42,3 +42,5 @@ Goeasy could be deployed as bundle of servers, it could also be deployed as an a
 
 * [Setup a SaaS](HowToSetup.md)
 * [Project Layout](ProjectLayout.md)
+* [Architecture](doc/index.md)
+* [Reference: Go-Micro in Action](https://nano-kit.github.io/go-micro-in-action/)
